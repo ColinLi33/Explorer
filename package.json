@@ -1,0 +1,25 @@
+{
+  "name": "fogofwar",
+  "version": "1.0.0",
+  "description": "Add fog of war to life360 map",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColinLi33/fogOfWar.git"
+  },
+  "author": "Colin Li",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ColinLi33/fogOfWar/issues"
+  },
+  "homepage": "https://github.com/ColinLi33/fogOfWar#readme",
+  "dependencies": {
+    "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mysql2": "^3.6.1"
+  }
+}
