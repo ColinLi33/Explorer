@@ -1,14 +1,31 @@
 ![](https://img.shields.io/github/stars/ColinLi33/fogOfWar) ![](https://img.shields.io/github/forks/ColinLi33/fogOfWar) ![](https://img.shields.io/github/tag/ColinLi33/fogOfWar) ![](https://img.shields.io/github/release/ColinLi33/fogOfWar) ![](https://img.shields.io/github/issues/ColinLi33/fogOfWar)
 
-See where you and your friends have been with fog of war added to your maps. Every place you've been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't will be darkened. Below is a very scuffed example
+<p align="center">
+    <h1 align = "center"> Fog of War</h1>
+</p>
+<p align="center">
+    <img width="300" src="https://i.imgur.com/ch6bByf.png" alt="Logo">
+</p>
 
-![](https://i.imgur.com/I6fjZTy.png)
+<p>
+See where you and your friends have been with fog of war added to your maps. Every place you've been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't will be darkened. Below is a very scuffed example.
+</p>
+
+<p align="center">
+    <img width="500" src="https://i.imgur.com/I6fjZTy.png" alt="Logo">
+</p>
 
 
-### Current Features
+<p align="center">
+    <h2 align = "center"> Current Features</h2>
+</p>
+
 - Automatically hooks onto Life360 data using custom API and logs locations and timestamp of every member in your circle
 
-### To-Do List
+<p align="center">
+    <h2 align = "center"> To-Do</h2>
+</p>
+
 - Put on AWS 
 - Add Maps and UI
 - Add fog of war
