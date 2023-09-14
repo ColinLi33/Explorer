@@ -13,6 +13,6 @@ See where you and your friends have been with fog of war added to your maps. Eve
 - Add Maps and UI
 - Add fog of war
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
-- Maybe be able to compare to other people by overlaying two maps on top of each other
+- Be able to compare to other people by overlaying two maps on top of each other
 
 
