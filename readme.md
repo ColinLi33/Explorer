@@ -1,6 +1,6 @@
 ![](https://img.shields.io/github/stars/ColinLi33/fogOfWar) ![](https://img.shields.io/github/forks/ColinLi33/fogOfWar) ![](https://img.shields.io/github/tag/ColinLi33/fogOfWar) ![](https://img.shields.io/github/release/ColinLi33/fogOfWar) ![](https://img.shields.io/github/issues/ColinLi33/fogOfWar)
 
-See where you and your friends have been with fog of war added to your maps. Every place you have been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't been will be darkened. Below is a very scuffed example
+See where you and your friends have been with fog of war added to your maps. Every place you've been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't will be darkened. Below is a very scuffed example
 
 ![](https://i.imgur.com/I6fjZTy.png)
 
