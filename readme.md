@@ -10,5 +10,6 @@ See where you've been and you haven't with fog of war added to your maps
 - Add Maps and UI
 - Add fog of war
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
+- Maybe be able to compare to other people by overlaying two maps on top of each other
 
 
