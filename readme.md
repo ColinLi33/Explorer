@@ -9,5 +9,6 @@ See where you've been and you haven't with fog of war added to your maps
 - Put on AWS 
 - Add Maps and UI
 - Add fog of war
+- Add cool statistics like # of countries, continents explored, area in miles explored, etc...
 
 
