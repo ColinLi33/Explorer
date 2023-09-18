@@ -41,8 +41,8 @@ async function logData(members){
         if(members[i]['location'] != null){
             const lat = members[i]['location']['latitude'];
             const long = members[i]['location']['longitude'];
-            const timestamp = members[i]['location']['timestamp'];
-            console.log(name, lat, long ,timestamp)
+            const timestamp = members[i]['location']['timestamp'];]
+            console.log(name, lat, long, timestamp);
             try {
                 // Insert location data into the database
                 await db.insertLocationData(name, lat, long, timestamp);
