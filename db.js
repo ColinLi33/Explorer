@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 
 class Database {
-    constructor(config) {
+    constructor(config) { 
 	    this.config = config;
 	    this.connection = mysql.createConnection(config);
     }
