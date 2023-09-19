@@ -26,7 +26,7 @@ See where you and your friends have been with fog of war added to your maps. Eve
     <h2 align = "center"> To-Do</h2>
 </p>
 
-- Put on AWS 
+- ~~Put on AWS~~ 
 - Add Maps and UI
 - Add fog of war
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...

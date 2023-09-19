@@ -16,7 +16,6 @@ app.get('/', (req, res) => {
     res.send('Server is running.');
 });
 class Logger{ 
-
     //initialize DB and Life360 Clients
     constructor(dbConfig, lifeToken, lifeUsername, lifePassword){ 
         this.db = new Database(dbConfig); 
