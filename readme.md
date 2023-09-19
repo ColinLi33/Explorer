@@ -28,6 +28,7 @@ See where you and your friends have been with fog of war added to your maps. Eve
 
 - ~~Put on AWS~~ 
 - Add Maps and UI
+- Make website
 - Add fog of war
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
 - Be able to compare to other people by overlaying two maps on top of each other
