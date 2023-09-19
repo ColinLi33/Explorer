@@ -28,7 +28,8 @@ class Database {
 				location_id INT AUTO_INCREMENT PRIMARY KEY,
 				person_name VARCHAR(255),
 				location POINT SRID 4326,
-				timestamp INT
+				timestamp INT,
+                INDEX personNameIndex (person_name)
 			)
 		`);
 
