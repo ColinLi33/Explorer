@@ -36,9 +36,10 @@ class Logger{
     //get memberDate from circle
     async getMembers(){
         try{
-            if(this.circleCheck % 50 == 0){
-                await this.getCircles();
-            }
+            //TODO: check if this is needed
+            // if(this.circleCheck % 50 == 0){
+            await this.getCircles();
+            // }
             await this.getCircle(0);
             this.circleCheck++;
             return this.circle['members'];
@@ -55,11 +56,14 @@ class Logger{
                 const lat = members[i]['location']['latitude'];
                 const long = members[i]['location']['longitude'];
                 const timestamp = members[i]['location']['timestamp'];
-                console.log(name, lat, long, timestamp);
+                // console.log(name, lat, long, timestamp);
                 try {
                     // Insert location data into the database
                     await this.db.insertLocationData(name, lat, long, timestamp);
-                    console.log(`Logged ${name}'s location`)
+                    if(this.circleCheck % 100 == 0){
+                        console.log("Logged data")
+                    }
+                    // console.log(`Logged ${name}'s location`)
                 } catch(error){
                         console.error('Error inserting location data:', error);
                 }

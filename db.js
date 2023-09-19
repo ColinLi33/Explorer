@@ -1,10 +1,10 @@
 const mysql = require('mysql2');
 
 class Database {
-	constructor(config) {
-		this.config = config;
-		this.connection = mysql.createConnection(config);
-	}
+    constructor(config) {
+	    this.config = config;
+	    this.connection = mysql.createConnection(config);
+    }
     //connect to db
 	connect() {
 		return new Promise((resolve, reject) => {
@@ -39,23 +39,25 @@ class Database {
         // Create a valid Point geometry with SRID 4326
         const point = `POINT(${latitude} ${longitude})`;
         
-        // Convert 25 feet to meters (1 meter = 3.28084 feet)
+        // Convert 50 feet to meters (1 meter = 3.28084 feet)
         const thresholdMeters = 50 / 3.28084;
 
-        //check if there is an existing point for the person within 25 feet
+        //check if there is an existing point for the person within 50 feet
         const existingPoint = await this.query(
             'SELECT location_id FROM LocationData WHERE person_name = ? AND ST_Distance_Sphere(location, ST_GeomFromText(?, 4326)) < ?',
             [personName, point, thresholdMeters]
         );
         
         if (existingPoint.length > 0) {
-            console.log("existing point")
+            // console.log("existing point")
             // If there's an existing point, update the timestamp
-            await this.query('UPDATE LocationData SET timestamp = ? WHERE location_id = ?', [timestamp, existingPoint[0].location_id]);
+            await this.query('UPDATE LocationData SET timestamp = ? WHERE location_id = ?', 
+            [timestamp, existingPoint[0].location_id]);
         } else {
-            // If there's no existing point within 25 feet, insert a new row
-            console.log('no existing point')
-            await this.query('INSERT INTO LocationData (person_name, location, timestamp) VALUES (?, ST_GeomFromText(?, 4326), ?)', [personName, point, timestamp]);
+            // If there's no existing point within 50 feet, insert a new row
+            console.log('no existing point', personName, latitude, longitude, timestamp)
+            await this.query('INSERT INTO LocationData (person_name, location, timestamp) VALUES (?, ST_GeomFromText(?, 4326), ?)', 
+            [personName, point, timestamp]);
         }
     }
 
