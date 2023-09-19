@@ -11,64 +11,85 @@ const dbConfig = {
     password: process.env.DBPASS,
     database: process.env.DBNAME,
 };
-const db = new Database(dbConfig);
 
 app.get('/', (req, res) => {
     res.send('Server is running.');
 });
+class Logger{ 
 
-//Function to initialize and connect to Life360 and get a list of memebrs in the circle
-async function getMembers(){
-    try{
-        const life360Client = new Life360(process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
-        if(await life360Client.authenticate()){
-            circles = await life360Client.getCircles();
-            circleId = circles[0]['id']; //get first circleId since i only have 1
-            circle = await life360Client.getCircle(circleId);
-            members = circle['members'];
-            return members;
+    //initialize DB and Life360 Clients
+    constructor(dbConfig, lifeToken, lifeUsername, lifePassword){ 
+        this.db = new Database(dbConfig); 
+        this.life360Client = new Life360(lifeToken, lifeUsername, lifePassword);
+        this.circleCheck = 0;
+    }; 
+
+    //get list of circles for Life360 Client
+    async getCircles(){ 
+        this.circles = await this.life360Client.getCircles(); 
+    } 
+    //get specific circle data 
+    async getCircle(indexNum){ 
+        this.circle = await this.life360Client.getCircle(this.circles[indexNum]['id']); 
+    } 
+
+    //get memberDate from circle
+    async getMembers(){
+        try{
+            if(this.circleCheck % 50 == 0){
+                await this.getCircles();
+            }
+            await this.getCircle(0);
+            this.circleCheck++;
+            return this.circle['members'];
+        } catch(error){
+            console.error("ERROR GETTING MEMBERS:", error);
         }
-    
-    } catch(error){
-        console.error("ERROR SIGNING IN:", error);
     }
-}
-
-//Function to get location of all members of circle and push it to MySQL database
-async function logData(members){
-    for(let i = 0; i < members.length; i++){
-        const name =  members[i]['firstName'] + members[i]['lastName'];
-        if(members[i]['location'] != null){
-            const lat = members[i]['location']['latitude'];
-            const long = members[i]['location']['longitude'];
-            const timestamp = members[i]['location']['timestamp'];]
-            console.log(name, lat, long, timestamp);
-            try {
-                // Insert location data into the database
-                await db.insertLocationData(name, lat, long, timestamp);
-                console.log(`Logged ${name}'s location`)
+    //log location data into db
+    async logData(){
+        const members = await this.getMembers();
+        for(let i = 0; i < members.length; i++){
+            const name =  members[i]['firstName'] + members[i]['lastName'];
+            if(members[i]['location'] != null){
+                const lat = members[i]['location']['latitude'];
+                const long = members[i]['location']['longitude'];
+                const timestamp = members[i]['location']['timestamp'];
+                console.log(name, lat, long, timestamp);
+                try {
+                    // Insert location data into the database
+                    await this.db.insertLocationData(name, lat, long, timestamp);
+                    console.log(`Logged ${name}'s location`)
                 } catch(error){
-                    console.error('Error inserting location data:', error);
+                        console.error('Error inserting location data:', error);
+                }
             }
         }
     }
-}
+    //start interval to log data
+    startInterval(breakTime){
+        this.intervalId = setInterval(() => this.logData(), breakTime);
+    }
 
-//start the MySQL database and start logging locations every 15 seconds
+    //stop interval to log data
+    stopInterval(){
+        clearInterval(this.intervalId);
+    }
+}
+    
 async function startServer() {
+    const log = new Logger(dbConfig, process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
     try {
-        // Initialize the database
-        await db.initialize();
-        members = await getMembers();
+        await log.db.initialize();
+        if(await log.life360Client.authenticate()){
+            log.startInterval(15 * 1000);
+        } else {
+            exit();
+        }
         // Start the Express server
         app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         });
-
-        //runs logoData every 30 seconds
-        setInterval(function() {
-            logData(members);
-        }, 15 * 1000);
     } catch(error){
         console.error('Error initializing the database:', error);
     }

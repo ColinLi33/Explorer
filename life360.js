@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 class Life360{
-    // baseUrl = 'https://api.life360.com/v3/';
     baseUrl = 'https://api-cloudfront.life360.com:443/v3/'
     tokenUrl = 'oauth2/token.json';
     circlesUrl = 'circles.json';
