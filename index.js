@@ -84,7 +84,6 @@ class Logger{
 async function startServer() {
     const log = new Logger(dbConfig, process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
     try {
-        await log.db.initialize();
         if(await log.life360Client.authenticate()){
             log.startInterval(15 * 1000);
         } else {

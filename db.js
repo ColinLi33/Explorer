@@ -19,10 +19,23 @@ class Database {
 			});
 		});
 	}
+    //helper function
+    query(sql, values = []) {
+        return new Promise((resolve, reject) => {
+            this.connection.query(sql, values, (err, results) => {
+                if (err) {
+                    console.error('Error executing query:', err);
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
     //set up DB if needed
 	async initialize() {
 		await this.connect();
-		// Create LocationData table if it doesn't exist
+		// Create LocationData table if it doesn't exist    
 		await this.query(`
 			CREATE TABLE IF NOT EXISTS LocationData (
 				location_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,11 +43,10 @@ class Database {
 				location POINT SRID 4326,
 				timestamp INT,
                 INDEX personNameIndex (person_name)
-			)
+            )
 		`);
-
-		// Perform other initialization tasks here
 	}
+    
     //insert location data into DB
     async insertLocationData(personName, latitude, longitude, timestamp) {
         // Create a valid Point geometry with SRID 4326
@@ -62,33 +74,16 @@ class Database {
         }
     }
 
-	async getLocationData() {
-		// Retrieve Point data as text with SRID
-		const results = await this.query('SELECT *, AsText(location) AS location_text FROM LocationData');
-		return results.map((row) => {
-			const locationText = row.location_text;
-			// Parse locationText to extract latitude and longitude if needed
-			return {
-				...row,
-				latitude: parsedLatitude,
-				longitude: parsedLongitude,
-			};
-		});
+    //get all data by name that is within a radius of currLat,currLong
+	async getLocationData(name, currLat, currLong, dist) {
+        const point = `POINT(${latitude} ${longitude})`;
+        const thresholdMeters = dist / 3.28084;
+		
+        const results = await this.query( 'SELECT location_id FROM LocationData WHERE person_name = ? AND ST_Distance_Sphere(location, ST_GeomFromText(?, 4326)) < ?',
+        [name, point, thresholdMeters]);
+        return results
 	}
-
-	query(sql, values = []) {
-		return new Promise((resolve, reject) => {
-			this.connection.query(sql, values, (err, results) => {
-				if (err) {
-					console.error('Error executing query:', err);
-					reject(err);
-				} else {
-					resolve(results);
-				}
-			});
-		});
-	}
-
+    //close db
 	close() {
 		this.connection.end((err) => {
 			if (err) {
