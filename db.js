@@ -52,8 +52,8 @@ class Database {
         // Create a valid Point geometry with SRID 4326
         const point = `POINT(${latitude} ${longitude})`;
         
-        // Convert 50 feet to meters (1 meter = 3.28084 feet)
-        const thresholdMeters = 50 / 3.28084;
+        // Convert 25 feet to meters (1 meter = 3.28084 feet)
+        const thresholdMeters = 25 / 3.28084;
 
         //check if there is an existing point for the person within 50 feet
         const existingPoint = await this.query(
@@ -79,6 +79,7 @@ class Database {
         const point = `POINT(${latitude} ${longitude})`;
         const thresholdMeters = dist / 3.28084;
 		
+        //TODO: idk about this line
         const results = await this.query( 'SELECT location_id FROM LocationData WHERE person_name = ? AND ST_Distance_Sphere(location, ST_GeomFromText(?, 4326)) < ?',
         [name, point, thresholdMeters]);
         return results
