@@ -5,6 +5,8 @@ const Database = require('./db')
 
 const port = 3333;
 const app = express();
+app.set('view engine', 'ejs');
+
 const dbConfig = {
     host: 'localhost',
     user: process.env.DBUSER,
@@ -13,7 +15,8 @@ const dbConfig = {
 };
 
 app.get('/', (req, res) => {
-    res.send('Server is running.');
+    const googlekey = process.env.GOOGLEMAPSKEY
+    res.render('index', {googlekey});
 });
 class Logger{ 
     //initialize DB and Life360 Clients
