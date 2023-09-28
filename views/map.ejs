@@ -15,8 +15,7 @@
 </head>
 <body>
     <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=<%=key %>&callback=initMap"> </script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=<%=key %>&callback=initMap&libraries=geometry"> </script>
     <script src="/js/maps.js"></script>
-    
 </body>
 </html>
