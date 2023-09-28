@@ -75,7 +75,7 @@ class Database {
     }
 
     //get all data by name that is within a radius of currLat,currLong
-	async getLocationData(name, currLat, currLong, dist) {
+	async getRelativeData(name, currLat, currLong, dist) {
         const point = `POINT(${latitude} ${longitude})`;
         const thresholdMeters = dist / 3.28084;
 		
@@ -84,6 +84,13 @@ class Database {
         [name, point, thresholdMeters]);
         return results
 	}
+
+    //get every location point by person
+    async getAllData(name){
+        const results = await this.query('SELECT ST_X(location) AS latitude, ST_Y(location) AS longitude FROM LocationData WHERE person_name = ?', name);
+        return results;
+    }
+
     //close db
 	close() {
 		this.connection.end((err) => {

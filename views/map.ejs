@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps Example</title>
+    <style>
+        #map {
+            height: 100%;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=<%=key %>&callback=initMap"> </script>
+    <script src="/js/maps.js"></script>
+    
+</body>
+</html>
