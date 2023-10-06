@@ -15,6 +15,8 @@
 </head>
 <body>
     <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@latest/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=<%=key %>&callback=initMap&libraries=geometry"> </script>
     <script src="/js/maps.js"></script>
 </body>

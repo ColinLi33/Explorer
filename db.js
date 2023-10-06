@@ -64,6 +64,7 @@ class Database {
         if (existingPoint.length > 0) {
             // console.log("existing point")
             // If there's an existing point, update the timestamp
+            // console.log('existing point', personName, latitude, longitude, timestamp)
             await this.query('UPDATE LocationData SET timestamp = ? WHERE location_id = ?', 
             [timestamp, existingPoint[0].location_id]);
         } else {
@@ -85,9 +86,9 @@ class Database {
         return results
 	}
 
-    //get every location point by person
+    //get every location point and timestamp by person
     async getAllData(name){
-        const results = await this.query('SELECT ST_X(location) AS latitude, ST_Y(location) AS longitude FROM LocationData WHERE person_name = ?', name);
+        const results = await this.query('SELECT ST_X(location) AS latitude, ST_Y(location) AS longitude, timestamp FROM LocationData WHERE person_name = ?', name);
         return results;
     }
 

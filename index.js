@@ -99,7 +99,7 @@ class Logger{
 async function startServer() {
     try {
         if(await log.life360Client.authenticate()){
-            log.startInterval(10 * 1000);
+            log.startInterval(5 * 1000);
         } else {
             exit();
         }
