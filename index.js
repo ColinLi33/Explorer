@@ -56,7 +56,6 @@ class Logger{
             //TODO: check if this is needed
             // if(this.circleCheck % 50 == 0){
                 await this.getCircles();
-                // }
                 await this.getCircle(0);
                 this.circleCheck++;
                 return this.circle['members'];

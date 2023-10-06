@@ -12,7 +12,7 @@ async function initMap() {
 
     const { Map, LatLngBounds, LatLng, Polygon} = google.maps;
     map = new Map(document.getElementById('map'), {
-        center: { lat: 32.8675441, lng: -117.25350029999998 },
+        center: { lat: points[0].latitude, lng: points[0].longitude },
         zoom: 13,
     });
     addMarkers();
