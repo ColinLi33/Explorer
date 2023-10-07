@@ -20,6 +20,7 @@ See where you and your friends have been with fog of war added to your maps. Eve
     <h2 align = "center"> Current Features</h2>
 </p>
 
+- Hosted on web at [ColinLi.me](http://colinli.me/)
 - Automatically hooks onto Life360 data using custom API and logs locations and timestamp of every member in your circle
 - Viewable map for each member
 - Fog of war enabled to darken areas you haven't been
@@ -29,7 +30,7 @@ See where you and your friends have been with fog of war added to your maps. Eve
 </p>
 
 - ~~Put on AWS~~ 
-- Make website
+- ~~Make website~~
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
 - Be able to compare to other people by overlaying two maps on top of each other
 
