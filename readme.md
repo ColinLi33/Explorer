@@ -8,11 +8,11 @@
 </p>
 
 <p>
-See where you and your friends have been with fog of war added to your maps. Every place you've been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't will be darkened. Below is a very scuffed example.
+See where you and your friends have been with fog of war added to your maps. Every place you've been will be visible and you can hover over it to see the last time you were there, but everywhere you haven't will be darkened. Below is an example.
 </p>
 
 <p align="center">
-    <img width="500" src="https://i.imgur.com/I6fjZTy.png" alt="Logo">
+    <img width="500" src="https://i.imgur.com/gDKRujo.png" alt="Logo">
 </p>
 
 
