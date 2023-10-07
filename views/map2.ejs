@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visited Locations Map</title>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/turf/turf.min.js"></script>
+    <script src="/js/maps2.js"></script>
+</body>
+</html>

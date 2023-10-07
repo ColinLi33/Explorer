@@ -17,7 +17,7 @@ const dbConfig = {
 
 app.get('/', (req, res) => {
     const googlekey = process.env.GOOGLEMAPSKEY
-    res.render('map', {googlekey});
+    res.render('map2', {googlekey});
 });
 
 app.get('/map/:personId', async (req, res) => {
@@ -27,7 +27,8 @@ app.get('/map/:personId', async (req, res) => {
     // Call the getPointsForPerson function to retrieve points from the database
     try{
         const points = await log.db.getAllData(personId);
-        res.render('map', {key: googlekey, pointList : points, name: personId});
+        // res.render('map2', {key: googlekey, pointList : points, name: personId});
+        res.render('map2', {pointList : points, name: personId});
     } catch(error){
         console.error(error);
     }
