@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Maps Example</title>
+    <title>Visited Locations Map</title>
     <style>
         #map {
             height: 100%;
+            width: 100%
         }
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
         }
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 50px; 
+            max-height: 50px;
+            z-index: 9999; 
+        }
     </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
+    <a href="/">
+        <img src="/images/logo.png" alt="Logo" class="logo">
+    </a>
     <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=<%=key %>&callback=initMap&libraries=geometry"> </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/turf/turf.min.js"></script>
     <script src="/js/maps.js"></script>
 </body>
 </html>

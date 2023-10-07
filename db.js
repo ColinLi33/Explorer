@@ -92,6 +92,12 @@ class Database {
         return results;
     }
 
+    async getAllPersonName(){
+        const results = await this.query('SELECT DISTINCT person_name FROM LocationData');
+        const personNamesList = results.map(item => item.person_name);
+        return personNamesList;
+    }
+ 
     //close db
 	close() {
 		this.connection.end((err) => {

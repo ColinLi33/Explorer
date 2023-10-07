@@ -3,7 +3,7 @@ require('dotenv').config();
 const Life360 = require('./life360');
 const Database = require('./db')
 
-const port = 3333;
+const port = 80;
 const app = express();
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
@@ -15,9 +15,15 @@ const dbConfig = {
     database: process.env.DBNAME,
 };
 
-app.get('/', (req, res) => {
-    const googlekey = process.env.GOOGLEMAPSKEY
-    res.render('map2', {googlekey});
+app.get('/', async (req, res) => {
+    try{
+        // const people = await log.db.getAllPersonName();
+        // res.render('home', {peopleList : people});
+        //only put me on it for now
+        res.render('home', {peopleList: ['ColinLi']})
+    } catch(error){
+        console.error(error);
+    }
 });
 
 app.get('/map/:personId', async (req, res) => {
@@ -28,7 +34,7 @@ app.get('/map/:personId', async (req, res) => {
     try{
         const points = await log.db.getAllData(personId);
         // res.render('map2', {key: googlekey, pointList : points, name: personId});
-        res.render('map2', {pointList : points, name: personId});
+        res.render('map', {pointList : points, name: personId});
     } catch(error){
         console.error(error);
     }
@@ -104,7 +110,7 @@ async function startServer() {
             exit();
         }
         // Start the Express server
-        app.listen(port, () => {
+        app.listen(port, '0.0.0.0', () => {
             console.log(`Server is running on port ${port}`);
         });
     } catch(error){
