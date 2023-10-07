@@ -21,15 +21,15 @@ See where you and your friends have been with fog of war added to your maps. Eve
 </p>
 
 - Automatically hooks onto Life360 data using custom API and logs locations and timestamp of every member in your circle
+- Viewable map for each member
+- Fog of war enabled to darken areas you haven't been
 
 <p align="center">
     <h2 align = "center"> To-Do</h2>
 </p>
 
 - ~~Put on AWS~~ 
-- Add Maps and UI
 - Make website
-- Add fog of war
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
 - Be able to compare to other people by overlaying two maps on top of each other
 
