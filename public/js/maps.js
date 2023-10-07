@@ -3,10 +3,11 @@ const pointsData = mapElement.getAttribute('data-points');
 const points = JSON.parse(pointsData);
 
 var map = L.map('map').setView([points[0].latitude, points[0].longitude], 14); // Default center and zoom level
+map.getRenderer(map).options.padding = 100;
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    noWrap: true
+    noWrap: true,
+    dragging: true
 }).addTo(map);
-
 var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]]);
 
 var visitedPolygons = points.map(function (point) {
@@ -26,3 +27,4 @@ var resultPolygon = L.polygon(worldPolygon.geometry.coordinates, {
     fillColor: 'black',
     fillOpacity: 0.85
 }).addTo(map);
+

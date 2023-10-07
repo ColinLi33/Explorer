@@ -5,9 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Person ID Selector</title>
+    <style>
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 50px; 
+            max-height: 50px;
+            z-index: 9999; 
+        }
+    </style>
 </head>
 
 <body>
+    <a href="/">
+        <img src="/images/logo.png" alt="Logo" class="logo">
+    </a>
     <h1>Select a Person ID:</h1>
     <form id="personIdForm">
         <select id="personIdDropdown">
