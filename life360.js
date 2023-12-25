@@ -1,9 +1,9 @@
 const axios = require('axios');
 
 class Life360{
-    baseUrl = 'https://api-cloudfront.life360.com:443/v3/'
-    tokenUrl = 'oauth2/token.json';
-    circlesUrl = 'circles.json';
+    baseUrl = 'https://api-cloudfront.life360.com/v3/'
+    tokenUrl = 'oauth2/token';
+    circlesUrl = 'circles';
     circleUrl = 'circles/';
     USER_AGENT = "com.life360.android.safetymapd/KOKO/23.49.0 android/13"
 
