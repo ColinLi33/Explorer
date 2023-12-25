@@ -5,7 +5,7 @@ class Life360{
     tokenUrl = 'oauth2/token.json';
     circlesUrl = 'circles.json';
     circleUrl = 'circles/';
-    USER_AGENT = "com.life360.android.safetymapd"
+    USER_AGENT = "com.life360.android.safetymapd/KOKO/23.49.0 android/13"
 
     constructor(token=null, username=null, password=null){
         this.token = token
