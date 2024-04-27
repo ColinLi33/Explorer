@@ -38,7 +38,6 @@ app.get('/map/:personId', async (req, res) => {
         // Run the DBSCAN algorithm on the points
         const dbscan = new densityClustering.DBSCAN();
         const clusters = dbscan.run(data, 0.001, 1); // make 2nd param lower for more clusters
-        console.log(clusters.length)
 
         // Calculate the representative point for each cluster
         const representativePoints = clusters.map(cluster => {
