@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     dragging: true
 }).addTo(map);
 var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]]);
-const maxDistance = 10; //max distance in km between two points
+const maxDistance = 8; //max distance in km between two points
 var segments = [];
 var segment = [points[0]];
 
@@ -28,9 +28,10 @@ segments.push(segment);
 
 segments.forEach(segment => {
     if (segment.length > 1) {
-        var simplifiedSegment = simplify(segment.map(point => ({x: point.latitude, y: point.longitude})), 0, false);
-        var line = turf.lineString(simplifiedSegment.map(point => [point.x, point.y]));
-        var buffered = turf.buffer(line, 0.20); // Adjust the buffer size as needed
+        // var simplifiedSegment = simplify(segment.map(point => ({x: point.latitude, y: point.longitude})), 0.001, true);
+        // var line = turf.lineString(simplifiedSegment.map(point => [point.x, point.y]));
+        var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
+        var buffered = turf.buffer(line, 0.25); // Adjust the buffer size as needed
         worldPolygon = turf.difference(worldPolygon, buffered);
     }
 });
