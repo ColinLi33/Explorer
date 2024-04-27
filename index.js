@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const Life360 = require('./life360');
 const Database = require('./db')
+const densityClustering = require('density-clustering');
 
 const port = 80;
 const app = express();
@@ -28,14 +29,28 @@ app.get('/', async (req, res) => {
 
 app.get('/map/:personId', async (req, res) => {
     const personId = req.params.personId;
-    const googlekey = process.env.GOOGLEMAPSKEY
-
-    // Call the getPointsForPerson function to retrieve points from the database
-    try{
+    try {
         const points = await log.db.getAllData(personId);
-        // res.render('map2', {key: googlekey, pointList : points, name: personId});
-        res.render('map', {pointList : points, name: personId});
-    } catch(error){
+
+        // Prepare the data
+        const data = points.map(point => [point.latitude, point.longitude]);
+
+        // Run the DBSCAN algorithm on the points
+        const dbscan = new densityClustering.DBSCAN();
+        const clusters = dbscan.run(data, 0.001, 1); // make 2nd param lower for more clusters
+        console.log(clusters.length)
+
+        // Calculate the representative point for each cluster
+        const representativePoints = clusters.map(cluster => {
+            const latitudes = cluster.map(index => points[index].latitude);
+            const longitudes = cluster.map(index => points[index].longitude);
+            const centroidLatitude = latitudes.reduce((a, b) => a + b) / latitudes.length;
+            const centroidLongitude = longitudes.reduce((a, b) => a + b) / longitudes.length;
+            return { latitude: centroidLatitude, longitude: centroidLongitude };
+        });
+
+        res.render('map', { pointList: representativePoints, name: personId });
+    } catch (error) {
         console.error(error);
     }
 });
@@ -46,6 +61,8 @@ class Logger{
         this.db = new Database(dbConfig); 
         this.life360Client = new Life360(lifeToken, lifeUsername, lifePassword);
         this.circleCheck = 0;
+        this.circles = null;
+        this.circle = null;
     }; 
 
     //get list of circles for Life360 Client
@@ -60,16 +77,24 @@ class Logger{
     //get memberDate from circle
     async getMembers(){
         try{
-            //TODO: check if this is needed
-            // if(this.circleCheck % 50 == 0){
+            if(this.circles == null || this.circleCheck % 1000 == 0){
                 await this.getCircles();
-                await this.getCircle(0);
-                this.circleCheck++;
-                return this.circle['members'];
-            } catch(error){
-                console.error("ERROR GETTING MEMBERS:", error);
             }
+            await this.getCircle(0);
+            this.circleCheck++;
+            if(this.circleCheck > 1000){
+                this.circleCheck = 0;
+            }
+            if(this.circle['members'] != null){
+                return this.circle['members'];
+            } else {
+                return [];
+            }
+        } catch(error){
+            console.error("ERROR GETTING MEMBERS:", error);
+            return [];
         }
+    }
         //log location data into db
         async logData(){
             const members = await this.getMembers();
@@ -105,9 +130,9 @@ class Logger{
 async function startServer() {
     try {
         if(await log.life360Client.authenticate()){
-            log.startInterval(5 * 1000);
+            log.startInterval(5 * 1000); // 5 seconds in between requests
         } else {
-            exit();
+            process.exit(1);
         }
         // Start the Express server
         app.listen(port, '0.0.0.0', () => {

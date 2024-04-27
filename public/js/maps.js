@@ -10,21 +10,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]]);
 
-var visitedPolygons = points.map(function (point) {
-    var turfPoint = turf.point([point.latitude, point.longitude]);
-    var bufferedPolygon = turf.buffer(turfPoint, .75);
-    // bufferedPolygon.properties = { timestamp: point.timestamp };
-    return bufferedPolygon;
-});
-
-
-visitedPolygons.forEach(function (visitedPolygon) {
-    worldPolygon = turf.difference(worldPolygon, visitedPolygon);
-});
-
+var line = turf.lineString(points.map(point => [point.latitude, point.longitude]));
+var buffered = turf.buffer(line, 0.20); // Adjust the buffer size as needed
+worldPolygon = turf.difference(worldPolygon, buffered);
 var resultPolygon = L.polygon(worldPolygon.geometry.coordinates, {
     color: 'black',
     fillColor: 'black',
     fillOpacity: 0.85
 }).addTo(map);
-
