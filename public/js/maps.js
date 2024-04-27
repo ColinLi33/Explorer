@@ -28,10 +28,8 @@ segments.push(segment);
 
 segments.forEach(segment => {
     if (segment.length > 1) {
-        // var simplifiedSegment = simplify(segment.map(point => ({x: point.latitude, y: point.longitude})), 0.001, true);
-        // var line = turf.lineString(simplifiedSegment.map(point => [point.x, point.y]));
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
-        var buffered = turf.buffer(line, 0.25); // Adjust the buffer size as needed
+        var buffered = turf.buffer(line, 0.20); // Adjust the buffer size as needed
         worldPolygon = turf.difference(worldPolygon, buffered);
     }
 });
