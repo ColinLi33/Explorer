@@ -28,7 +28,7 @@ segments.push(segment);
 
 segments.forEach(segment => {
     if (segment.length > 1) {
-        var simplifiedSegment = simplify(segment.map(point => ({x: point.latitude, y: point.longitude})), 0.00001, true);
+        var simplifiedSegment = simplify(segment.map(point => ({x: point.latitude, y: point.longitude})), 0.0001, true);
         var line = turf.lineString(simplifiedSegment.map(point => [point.x, point.y]));
         var buffered = turf.buffer(line, 0.20); // Adjust the buffer size as needed
         worldPolygon = turf.difference(worldPolygon, buffered);
