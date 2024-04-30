@@ -12,7 +12,7 @@ See where you and your friends have been with fog of war added to your maps. Eve
 </p>
 
 <p align="center">
-    <img width="500" src="https://i.imgur.com/xXKL0Sz.png" alt="Logo">
+    <img width="500" src="https://i.imgur.com/RQi9Yvo.png" alt="Logo">
 </p>
 
 
