@@ -1,4 +1,4 @@
-![](https://img.shields.io/github/stars/ColinLi33/fogOfWar) ![](https://img.shields.io/github/forks/ColinLi33/fogOfWar) ![](https://img.shields.io/github/tag/ColinLi33/fogOfWar) ![](https://img.shields.io/github/release/ColinLi33/fogOfWar) ![](https://img.shields.io/github/issues/ColinLi33/fogOfWar)
+![](https://img.shields.io/github/stars/ColinLi33/Explorer) ![](https://img.shields.io/github/forks/ColinLi33/Explorer) ![](https://img.shields.io/github/tag/ColinLi33/Explorer) ![](https://img.shields.io/github/release/ColinLi33/Explorer) ![](https://img.shields.io/github/issues/ColinLi33/Explorer)
 
 <p align="center">
     <h1 align = "center"> Explorer</h1>
