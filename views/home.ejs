@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explorer</title>
     <style>
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .logo {
             position: absolute;
             top: 10px;
@@ -14,22 +18,39 @@
             max-height: 50px;
             z-index: 9999; 
         }
+        .resume-container {
+            margin-top: 50px;
+            width: 100%;
+            height: 600px; 
+        }
+        .resume-pdf {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 
 <body>
+    <div class="header">
+        <h1>Explorer</h1>
+    </div>
     <a href="/">
         <img src="/images/logo.png" alt="Logo" class="logo">
     </a>
     <h1>Select a Person ID:</h1>
     <form id="personIdForm">
         <select id="personIdDropdown">
-            <!-- Options will be added dynamically using JavaScript -->
         </select>
         <button type="submit">Go to Map</button>
     </form>
 
     <div id="people" data-points="<%= JSON.stringify(peopleList) %>"></div>
+
+    <section class="resume-container">
+        <h2>My Resume</h2>
+        <embed class="resume-pdf" src="/images/ColinLi_Resume.pdf#toolbar=0" type="application/pdf" />
+    </section>
 
     <script src="/js/home.js"></script>
 </body>
