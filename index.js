@@ -74,6 +74,9 @@ class Logger{
             if(this.circles == null || this.circleCheck % 1000 == 0){
                 await this.getCircles();
             }
+            if(this.circles == null || this.circles.length == 0){
+                return [];
+            }
             await this.getCircle(0);
             this.circleCheck++;
             if(this.circleCheck > 1000){

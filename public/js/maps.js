@@ -8,13 +8,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     dragging: true
 }).addTo(map);
 var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]]);
-const maxDistance = 8; //max distance in km between two points
+const maxDistance = 4; //max distance in km between two points
 var segments = [];
 var segment = [points[0]];
 
 for (let i = 1; i < points.length; i++) {
-    const point1 = turf.point([segment[segment.length - 1].longitude, segment[segment.length - 1].latitude]);
-    const point2 = turf.point([points[i].longitude, points[i].latitude]);
+    const point1 = turf.point([segment[segment.length - 1].longitude, segment[segment.length - 1].latitude]); //last point in segment
+    const point2 = turf.point([points[i].longitude, points[i].latitude]); //new point we are looking at
     const distance = turf.distance(point1, point2);
 
     if (distance > maxDistance) {

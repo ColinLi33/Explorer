@@ -67,7 +67,10 @@ class Life360{
         const url = this.baseUrl + this.circlesUrl;
         const authHeader = "bearer " + this.token;
         const res = await this.makeRequest(url, null, 'GET', authHeader);
-        return res['circles'];
+        if(res != null){
+            return res['circles'];
+        }
+        return res
     }
     //get circle by circleID
     async getCircle(circleId){
