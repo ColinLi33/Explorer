@@ -35,7 +35,6 @@ class Database {
     //set up DB if needed
 	async initialize() {
 		await this.connect();
-		// Create LocationData table if it doesn't exist    
 		await this.query(`
 			CREATE TABLE IF NOT EXISTS LocationData (
 				location_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,10 +48,8 @@ class Database {
     
     //insert location data into DB
     async insertLocationData(personName, latitude, longitude, timestamp) {
-        // Create a valid Point geometry with SRID 4326
         const point = `POINT(${latitude} ${longitude})`;
-        
-        // Convert 25 feet to meters (1 meter = 3.28084 feet)
+
         const thresholdMeters = 25 / 3.28084;
 
         //check if there is an existing point for the person within 50 feet

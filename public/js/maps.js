@@ -29,7 +29,7 @@ segments.push(segment);
 segments.forEach(segment => {
     if (segment.length > 1) {
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
-        var buffered = turf.buffer(line, 0.20); // Adjust the buffer size as needed
+        var buffered = turf.buffer(line, 0.20); //how wide the line is 
         worldPolygon = turf.difference(worldPolygon, buffered);
     }
 });

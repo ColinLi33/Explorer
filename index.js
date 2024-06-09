@@ -32,14 +32,10 @@ app.get('/map/:personId', async (req, res) => {
     try {
         const points = await log.db.getAllData(personId);
 
-        // Prepare the data
         const data = points.map(point => [point.latitude, point.longitude]);
-
-        // Run the DBSCAN algorithm on the points
         const dbscan = new densityClustering.DBSCAN();
         const clusters = dbscan.run(data, 0.0005, 1); // make 2nd param lower for more clusters
 
-        // Calculate the representative point for each cluster
         const representativePoints = clusters.map(cluster => {
             const latitudes = cluster.map(index => points[index].latitude);
             const longitudes = cluster.map(index => points[index].longitude);
@@ -55,7 +51,6 @@ app.get('/map/:personId', async (req, res) => {
 });
 
 class Logger{ 
-    //initialize DB and Life360 Clients
     constructor(dbConfig, lifeToken, lifeUsername, lifePassword){ 
         this.db = new Database(dbConfig); 
         this.life360Client = new Life360(lifeToken, lifeUsername, lifePassword);
@@ -84,7 +79,7 @@ class Logger{
             if(this.circleCheck > 1000){
                 this.circleCheck = 0;
             }
-            if(this.circle['members'] != null){
+            if(this.circle != null && this.circle['members'] != null){
                 return this.circle['members'];
             } else {
                 return [];
@@ -133,7 +128,6 @@ async function startServer() {
         } else {
             process.exit(1);
         }
-        // Start the Express server
         app.listen(port, '0.0.0.0', () => {
             console.log(`Server is running on port ${port}`);
         });
