@@ -50,9 +50,9 @@ class Database {
     async insertLocationData(personName, latitude, longitude, timestamp) {
         const point = `POINT(${latitude} ${longitude})`;
 
-        const thresholdMeters = 25 / 3.28084;
+        const thresholdMeters = 15 / 3.28084;
 
-        //check if there is an existing point for the person within 50 feet
+        //check if there is an existing point for the person within threshold 
         const existingPoint = await this.query(
             'SELECT location_id FROM LocationData WHERE person_name = ? AND ST_Distance_Sphere(location, ST_GeomFromText(?, 4326)) < ?',
             [personName, point, thresholdMeters]
@@ -65,7 +65,7 @@ class Database {
             await this.query('UPDATE LocationData SET timestamp = ? WHERE location_id = ?', 
             [timestamp, existingPoint[0].location_id]);
         } else {
-            // If there's no existing point within 50 feet, insert a new row
+            // If there's no existing point within threshold, insert a new row
             console.log('no existing point', personName, latitude, longitude, timestamp)
             await this.query('INSERT INTO LocationData (person_name, location, timestamp) VALUES (?, ST_GeomFromText(?, 4326), ?)', 
             [personName, point, timestamp]);
