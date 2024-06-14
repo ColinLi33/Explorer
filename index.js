@@ -59,9 +59,10 @@ app.post('/update', async (req, res) => {
     const locData = data.locations[0];
     const deviceId = locData.properties.device_id
     const timestamp = locData.properties.timestamp;
+    const epochTime = new Date(timestamp).getTime() / 1000;
     const lat = locData.geometry.coordinates[1];
     const long = locData.geometry.coordinates[0];
-    logger.logData(deviceId, timestamp, lat, long);
+    logger.logData(deviceId, epochTime, lat, long);
 });
 
 class Logger{ 
