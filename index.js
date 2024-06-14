@@ -53,6 +53,7 @@ app.get('/map/:personId', async (req, res) => {
 
 app.post('/update', async (req, res) => {
     const data = req.body;
+    console.log(data);
     if(data == null){
         return;
     }
