@@ -88,11 +88,10 @@ class Logger{
         const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
-            console.log("Inserted data", name, lat, long, timestamp);
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
-                console.log("Inserted data")
+                console.log("Inserted data", name, lat, long, timestamp);
             }
         } catch(error){
             console.error('Error inserting location data:', error);
