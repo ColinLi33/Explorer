@@ -59,7 +59,6 @@ app.post('/update', async (req, res) => {
     }
     for(let i = 0; i < data.locations.length; i++){
         const locData = data.locations[i];
-        console.log(locData)
         const deviceId = locData.properties.device_id
         const timestamp = locData.properties.timestamp;
         const epochTime = new Date(timestamp).getTime() / 1000;
@@ -94,6 +93,26 @@ class Logger{
 
     //log location data into db
     async logData(deviceId, timestamp, lat, long){
+        fakeData = {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [ -117.237146, 32.8809435 ] },
+            properties: {
+                speed: 0,
+                battery_state: 'unplugged',
+                motion: [],
+                timestamp: '2024-06-14T23:48:58Z',
+                horizontal_accuracy: 6,
+                speed_accuracy: 1,
+                vertical_accuracy: 1,
+                battery_level: 0.51,
+                wifi: 'UCSD-PROTECTED',
+                unique_id: 'EB728BD6-42F0-4868-B899-698164B4CBE2',
+                course: 228,
+                device_id: '3333',
+                altitude: 119,
+                course_accuracy: 180
+            }
+        }
         const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
