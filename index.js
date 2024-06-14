@@ -56,13 +56,15 @@ app.post('/update', async (req, res) => {
     if(data == null){
         res.status(200).send({"result": "ok"});
     }
-    const locData = data.locations[0];
-    const deviceId = locData.properties.device_id
-    const timestamp = locData.properties.timestamp;
-    const epochTime = new Date(timestamp).getTime() / 1000;
-    const lat = locData.geometry.coordinates[1];
-    const long = locData.geometry.coordinates[0];
-    logger.logData(deviceId, epochTime, lat, long);
+        for(let i = 0; i < data.locations.length; i++){
+        const locData = data.locations[i];
+        const deviceId = locData.properties.device_id
+        const timestamp = locData.properties.timestamp;
+        const epochTime = new Date(timestamp).getTime() / 1000;
+        const lat = locData.geometry.coordinates[1];
+        const long = locData.geometry.coordinates[0];
+        logger.logData(deviceId, epochTime, lat, long);
+    }
     res.status(200).send({"result": "ok"});
 });
 
