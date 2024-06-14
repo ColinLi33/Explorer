@@ -53,84 +53,41 @@ app.get('/map/:personId', async (req, res) => {
 
 app.post('/update', async (req, res) => {
     const data = req.body;
-    const deviceId = data.properties.device_id
-    const timestamp = data.properties.timestamp;
-    const lat = data.geometry.coordinates[1];
-    const long = data.geometry.coordinates[0];
-    console.log(Data.geometric.coordinates)
+    if(data == null){
+        return;
+    }
+    const locData = data.locations[0];
+    const deviceId = locData.properties.device_id
+    const timestamp = locData.properties.timestamp;
+    const lat = locData.geometry.coordinates[1];
+    const long = locData.geometry.coordinates[0];
+    logger.logData(deviceId, timestamp, lat, long);
 });
 
 class Logger{ 
-    constructor(dbConfig, lifeToken, lifeUsername, lifePassword){ 
+    constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
-        this.life360Client = new Life360(lifeToken, lifeUsername, lifePassword);
-        this.circleCheck = 0;
-        this.circles = null;
-        this.circle = null;
+        this.insertCounter = 0;
     }; 
 
-    //get list of circles for Life360 Client
-    async getCircles(){ 
-        this.circles = await this.life360Client.getCircles(); 
-    } 
-    //get specific circle data 
-    async getCircle(indexNum){ 
-        this.circle = await this.life360Client.getCircle(this.circles[indexNum]['id']); 
-    } 
-    
-    //get memberDate from circle
-    async getMembers(){
-        try{
-            if(this.circles == null || this.circleCheck % 1000 == 0){
-                await this.getCircles();
-            }
-            if(this.circles == null || this.circles.length == 0){
-                return [];
-            }
-            await this.getCircle(0);
-            this.circleCheck++;
-            if(this.circleCheck > 1000){
-                this.circleCheck = 0;
-            }
-            if(this.circle != null && this.circle['members'] != null){
-                return this.circle['members'];
-            } else {
-                return [];
+    getNameFromId(id){
+        if(id == 3333) //temporary solution for now
+            return "ColinLi";
+    }
+
+    //log location data into db
+    async logData(deviceId, timestamp, lat, long){
+        const name = this.getNameFromId(3333);
+        try {
+            await this.db.insertLocationData(name, lat, long, timestamp);
+            this.insertCounter++;
+            if(this.insertCounter >= 1000){
+                this.insertCounter = 0;
+                console.log("Inserted data")
             }
         } catch(error){
-            console.error("ERROR GETTING MEMBERS:", error);
-            return [];
+            console.error('Error inserting location data:', error);
         }
-    }
-        //log location data into db
-        async logData(){
-            const members = await this.getMembers();
-            for(let i = 0; i < members.length; i++){
-                const name =  members[i]['firstName'] + members[i]['lastName'];
-                if(members[i]['location'] != null){
-                    const lat = members[i]['location']['latitude'];
-                    const long = members[i]['location']['longitude'];
-                    const timestamp = members[i]['location']['timestamp'];
-                    try {
-                        // Insert location data into the database
-                        await this.db.insertLocationData(name, lat, long, timestamp);
-                        if(this.circleCheck % 100 == 0){
-                        console.log("Logged data")
-                    }
-                } catch(error){
-                    console.error('Error inserting location data:', error);
-                }
-            }
-        }
-    }
-    //start interval to log data
-    startInterval(breakTime){
-        this.intervalId = setInterval(() => this.logData(), breakTime);
-    }
-    
-    //stop interval to log data
-    stopInterval(){
-        clearInterval(this.intervalId);
     }
 }
 
@@ -143,6 +100,6 @@ async function startServer() {
         console.error('Error initializing the database:', error);
     }
 }
-// const log = new Logger(dbConfig, process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
+const log = new Logger(dbConfig);
 startServer();
 
