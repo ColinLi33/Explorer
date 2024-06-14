@@ -64,7 +64,7 @@ class Life360{
     }
     //get list of circles for account
     async getCircles(){
-        const url = this.baseUrl + this.circlesUrl;
+        const url = this.baseURL + this.circlesUrl;
         const authHeader = "bearer " + this.token;
         const res = await this.makeRequest(url, null, 'GET', authHeader);
         if(res != null){

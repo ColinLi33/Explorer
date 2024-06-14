@@ -50,6 +50,16 @@ app.get('/map/:personId', async (req, res) => {
     }
 });
 
+app.get('/update/', async (req, res) => {
+    console.log(res)
+    // try {
+    //     await this.db.insertLocationData(name, lat, long, timestamp);
+    //     res.json(points);
+    // } catch (error) {
+    //     console.error(error);
+    // }
+});
+
 class Logger{ 
     constructor(dbConfig, lifeToken, lifeUsername, lifePassword){ 
         this.db = new Database(dbConfig); 
@@ -126,11 +136,11 @@ class Logger{
 
 async function startServer() {
     try {
-        if(await log.life360Client.authenticate()){
-            log.startInterval(5 * 1000); // 5 seconds in between requests
-        } else {
-            process.exit(1);
-        }
+        // if(await log.life360Client.authenticate()){
+        //     log.startInterval(5 * 1000); // 5 seconds in between requests
+        // } else {
+        //     process.exit(1);
+        // }
         app.listen(port, '0.0.0.0', () => {
             console.log(`Server is running on port ${port}`);
         });
@@ -138,6 +148,6 @@ async function startServer() {
         console.error('Error initializing the database:', error);
     }
 }
-const log = new Logger(dbConfig, process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
+// const log = new Logger(dbConfig, process.env.LIFETOKEN, process.env.LIFEUSERNAME, process.env.LIFEPASSWORD);
 startServer();
 
