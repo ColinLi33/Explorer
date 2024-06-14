@@ -59,6 +59,7 @@ app.post('/update', async (req, res) => {
     }
     for(let i = 0; i < data.locations.length; i++){
         const locData = data.locations[i];
+        console.log(locData)
         const deviceId = locData.properties.device_id
         const timestamp = locData.properties.timestamp;
         const epochTime = new Date(timestamp).getTime() / 1000;
@@ -80,13 +81,15 @@ class Logger{
         this.lastInsert = null;
     }; 
 
-    getNameFromId(id){
+    getNameFromId(id){ //move this into the DB
         if(id == 3333) //temporary solution for now
             return "ColinLi";
         else if(id == 4444)
             return "JoshuaHidalgo";
         else if(id == 5555)
             return "WillGreenwood";
+        else 
+            return null
     }
 
     //log location data into db
