@@ -27,7 +27,7 @@ for (let i = 1; i < points.length; i++) {
     }
 }
 segments.push(segment);
-
+console.log(segments);
 segments.forEach(segment => {
     if (segment.length > 1) {
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
