@@ -11,9 +11,6 @@ var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180]
 const maxDistance = 4; //max distance in km between two points
 var segments = [];
 var segment = [points[0]];
-if(points.length == 1){
-    segments = [segment];
-}
 for (let i = 1; i < points.length; i++) {
     const point1 = turf.point([segment[segment.length - 1].longitude, segment[segment.length - 1].latitude]); //last point in segment
     const point2 = turf.point([points[i].longitude, points[i].latitude]); //new point we are looking at
@@ -27,13 +24,12 @@ for (let i = 1; i < points.length; i++) {
     }
 }
 segments.push(segment);
-console.log(segments);
 segments.forEach(segment => {
     if (segment.length > 1) {
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
         var buffered = turf.buffer(line, 0.20); //how wide the line is 
         worldPolygon = turf.difference(worldPolygon, buffered);
-    } else {
+    } else { //TODO fix this single point 
         var point = turf.point([segment[0].longitude, segment[0].latitude]);
         var buffered = turf.buffer(point, 0.20);
         worldPolygon = turf.difference(worldPolygon, buffered);
