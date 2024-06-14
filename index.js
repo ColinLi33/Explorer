@@ -64,7 +64,7 @@ app.post('/update', async (req, res) => {
     const lat = locData.geometry.coordinates[1];
     const long = locData.geometry.coordinates[0];
     logger.logData(deviceId, epochTime, lat, long);
-    res.status(200).send('Data received');
+    res.status(200).send({"result": "ok"});
 });
 
 class Logger{ 
