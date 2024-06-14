@@ -100,6 +100,6 @@ async function startServer() {
         console.error('Error initializing the database:', error);
     }
 }
-const log = new Logger(dbConfig);
+const logger = new Logger(dbConfig);
 startServer();
 
