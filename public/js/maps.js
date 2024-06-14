@@ -31,6 +31,10 @@ segments.forEach(segment => {
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
         var buffered = turf.buffer(line, 0.20); //how wide the line is 
         worldPolygon = turf.difference(worldPolygon, buffered);
+    } else {
+        var point = turf.point([segment[0].longitude, segment[0].latitude]);
+        var buffered = turf.buffer(point, 0.20);
+        worldPolygon = turf.difference(worldPolygon, buffered);
     }
 });
 var resultPolygon = L.polygon(worldPolygon.geometry.coordinates, {
