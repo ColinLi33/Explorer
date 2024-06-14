@@ -78,7 +78,9 @@ class Logger{
         if(id == 3333) //temporary solution for now
             return "ColinLi";
         else if(id == 4444)
-            return "JoshuaHidalgo"
+            return "JoshuaHidalgo";
+        else if(id == 5555)
+            return "WillGreenwood";
     }
 
     //log location data into db
