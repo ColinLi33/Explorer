@@ -44,7 +44,6 @@ app.get('/map/:personId', async (req, res) => {
             const centroidLongitude = longitudes.reduce((a, b) => a + b) / longitudes.length;
             return { latitude: centroidLatitude, longitude: centroidLongitude };
         });
-        console.log(representativePoints)
 
         res.render('map', { pointList: representativePoints, name: personId });
     } catch (error) {
