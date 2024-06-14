@@ -7,6 +7,7 @@ const densityClustering = require('density-clustering');
 const port = 80;
 const app = express();
 app.use(express.static('public'));
+app.use(express.json());
 app.set('view engine', 'ejs');
 
 const dbConfig = {
@@ -51,13 +52,12 @@ app.get('/map/:personId', async (req, res) => {
 });
 
 app.post('/update', async (req, res) => {
-    console.log(req.body)
-    // try {
-    //     await this.db.insertLocationData(name, lat, long, timestamp);
-    //     res.json(points);
-    // } catch (error) {
-    //     console.error(error);
-    // }
+    const data = req.body;
+    const deviceId = data.properties.device_id
+    const timestamp = data.properties.timestamp;
+    const lat = data.geometry.coordinates[1];
+    const long = data.geometry.coordinates[0];
+    console.log(Data.geometric.coordinates)
 });
 
 class Logger{ 
@@ -136,11 +136,6 @@ class Logger{
 
 async function startServer() {
     try {
-        // if(await log.life360Client.authenticate()){
-        //     log.startInterval(5 * 1000); // 5 seconds in between requests
-        // } else {
-        //     process.exit(1);
-        // }
         app.listen(port, '0.0.0.0', () => {
             console.log(`Server is running on port ${port}`);
         });
