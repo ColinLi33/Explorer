@@ -55,8 +55,9 @@ app.post('/update', async (req, res) => {
     const data = req.body;
     if(data == null){
         res.status(200).send({"result": "ok"});
+        return 
     }
-        for(let i = 0; i < data.locations.length; i++){
+    for(let i = 0; i < data.locations.length; i++){
         const locData = data.locations[i];
         const deviceId = locData.properties.device_id
         const timestamp = locData.properties.timestamp;
@@ -68,10 +69,15 @@ app.post('/update', async (req, res) => {
     res.status(200).send({"result": "ok"});
 });
 
+app.get('/debug', (req, res) => {
+    res.send(logger.lastInsert);
+});
+
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
         this.insertCounter = 0;
+        this.lastInsert = null;
     }; 
 
     getNameFromId(id){
@@ -88,6 +94,7 @@ class Logger{
         const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
+            this.lastInsert = {name, lat, long, timestamp};
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
