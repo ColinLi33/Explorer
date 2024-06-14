@@ -50,8 +50,8 @@ app.get('/map/:personId', async (req, res) => {
     }
 });
 
-app.get('/update/', async (req, res) => {
-    console.log(res)
+app.post('/update', async (req, res) => {
+    console.log(req.body)
     // try {
     //     await this.db.insertLocationData(name, lat, long, timestamp);
     //     res.json(points);
