@@ -82,7 +82,7 @@ class Logger{
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
             this.insertCounter++;
-            if(this.insertCounter >= 1000){
+            if(this.insertCounter >= 100){
                 this.insertCounter = 0;
                 console.log("Inserted data")
             }
