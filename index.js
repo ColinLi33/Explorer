@@ -78,7 +78,7 @@ class Logger{
 
     //log location data into db
     async logData(deviceId, timestamp, lat, long){
-        const name = this.getNameFromId(3333);
+        const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
             this.insertCounter++;
