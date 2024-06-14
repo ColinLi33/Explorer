@@ -55,7 +55,7 @@ app.post('/update', async (req, res) => {
     const data = req.body;
     console.log(data);
     if(data == null){
-        return;
+        res.status(400).send('No data received');
     }
     const locData = data.locations[0];
     const deviceId = locData.properties.device_id
@@ -64,6 +64,7 @@ app.post('/update', async (req, res) => {
     const lat = locData.geometry.coordinates[1];
     const long = locData.geometry.coordinates[0];
     logger.logData(deviceId, epochTime, lat, long);
+    res.status(200).send('Data received');
 });
 
 class Logger{ 
