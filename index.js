@@ -93,7 +93,7 @@ class Logger{
 
     //log location data into db
     async logData(deviceId, timestamp, lat, long){
-        fakeData = {
+        const fakeData = {
             type: 'Feature',
             geometry: { type: 'Point', coordinates: [ -117.237146, 32.8809435 ] },
             properties: {
