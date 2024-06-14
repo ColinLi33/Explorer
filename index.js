@@ -31,7 +31,7 @@ app.get('/', async (req, res) => {
 app.get('/map/:personId', async (req, res) => {
     const personId = req.params.personId;
     try {
-        const points = await log.db.getAllData(personId);
+        const points = await logger.db.getAllData(personId);
 
         const data = points.map(point => [point.latitude, point.longitude]);
         const dbscan = new densityClustering.DBSCAN();
