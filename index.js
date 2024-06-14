@@ -53,9 +53,8 @@ app.get('/map/:personId', async (req, res) => {
 
 app.post('/update', async (req, res) => {
     const data = req.body;
-    console.log(data);
     if(data == null){
-        res.status(400).send('No data received');
+        res.status(200).send({"result": "ok"});
     }
     const locData = data.locations[0];
     const deviceId = locData.properties.device_id
@@ -83,7 +82,6 @@ class Logger{
         const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
-            console.log("TEST INSERT", lat, long, name, timestamp);
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
