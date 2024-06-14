@@ -29,9 +29,10 @@ segments.forEach(segment => {
         var line = turf.lineString(segment.map(point => [point.latitude, point.longitude]));
         var buffered = turf.buffer(line, 0.20); //how wide the line is 
         worldPolygon = turf.difference(worldPolygon, buffered);
-    } else { //TODO fix this single point 
+    } else if(segment.length == 1) {  ///single point
+        console.log(segment)
         var point = turf.point([segment[0].longitude, segment[0].latitude]);
-        var buffered = turf.buffer(point, 0.20);
+        var buffered = turf.buffer(point, 0.05); // Small buffer for single point (0.05 km)
         worldPolygon = turf.difference(worldPolygon, buffered);
     }
 });
