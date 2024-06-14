@@ -75,6 +75,8 @@ class Logger{
     getNameFromId(id){
         if(id == 3333) //temporary solution for now
             return "ColinLi";
+        else if(id == 4444)
+            return "JoshuaHidalgo"
     }
 
     //log location data into db
