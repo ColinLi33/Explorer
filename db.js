@@ -98,7 +98,10 @@ class Database {
 
     async getNameFromUID(uid){
         const results = await this.query('SELECT person_name FROM Users WHERE id = ?', [uid]);
-        return results;
+        if(results == null || results.length == 0){
+            return null;
+        }
+        return results[0].person_name;
     }
 
     async updateUser(id, name){

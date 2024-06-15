@@ -136,9 +136,8 @@ class Logger{
             name = this.getNameFromId(deviceId);
         } else {
             name = await this.db.getNameFromUID(uid)
-            console.log(name)
         }
-        if(name == null || name.length == 0){
+        if(name == null){
             console.log("No name found for uid", uid);
             name = this.getNameFromId(deviceId);
             if(name == null){
