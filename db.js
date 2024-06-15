@@ -44,6 +44,7 @@ class Database {
                 INDEX personNameIndex (person_name)
             )
 		`);
+        await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
 	}
     
     //insert location data into DB
@@ -93,6 +94,15 @@ class Database {
         const results = await this.query('SELECT DISTINCT person_name FROM LocationData');
         const personNamesList = results.map(item => item.person_name);
         return personNamesList;
+    }
+
+    async getNameFromUID(uid){
+        const results = await this.query('SELECT person_name FROM Users WHERE id = ?', [uid]);
+        return results;
+    }
+
+    async updateUser(id, name){
+        await this.query('INSERT INTO Users (id, person_name) VALUES (?, ?)', [id, name]);
     }
  
     //close db

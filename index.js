@@ -50,7 +50,43 @@ app.get('/map/:personId', async (req, res) => {
         console.error(error);
     }
 });
+/*
+app.get('/debugupdate', (req, res) => {
+    console.log("TESTING UPDATE")
+    let data = {locations: []}
+    const fakeData = {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ -117.237146, 32.8809435 ] },
+        properties: {
+            speed: 0,
+            battery_state: 'unplugged',
+            motion: [],
+            timestamp: new Date().toISOString(),
+            horizontal_accuracy: 6,
+            speed_accuracy: 1,
+            vertical_accuracy: 1,
+            battery_level: 0.51,
+            wifi: 'UCSD-PROTECTED',
+            course: 228,
+            device_id: '3333',
+            altitude: 119,
+            course_accuracy: 180
+        }
+    }
+    data.locations.push(fakeData);
 
+    for(let i = 0; i < data.locations.length; i++){
+        const locData = data.locations[i];
+        const deviceId = locData.properties.device_id
+        const uid = locData.properties.unique_id;
+        const timestamp = locData.properties.timestamp;
+        const epochTime = new Date(timestamp).getTime() / 1000;
+        const lat = locData.geometry.coordinates[1];
+        const long = locData.geometry.coordinates[0];
+        logger.logData(deviceId, uid, epochTime, lat, long);
+    }
+});
+*/
 app.post('/update', async (req, res) => {
     const data = req.body;
     if(data == null){
@@ -60,11 +96,12 @@ app.post('/update', async (req, res) => {
     for(let i = 0; i < data.locations.length; i++){
         const locData = data.locations[i];
         const deviceId = locData.properties.device_id
+        const uid = locData.properties.unique_id;
         const timestamp = locData.properties.timestamp;
         const epochTime = new Date(timestamp).getTime() / 1000;
         const lat = locData.geometry.coordinates[1];
         const long = locData.geometry.coordinates[0];
-        logger.logData(deviceId, epochTime, lat, long);
+        logger.logData(deviceId, uid, epochTime, lat, long);
     }
     res.status(200).send({"result": "ok"});
 });
@@ -76,44 +113,41 @@ app.get('/debug', (req, res) => {
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
+        this.db.initialize();
         this.insertCounter = 0;
         this.lastInsert = null;
     }; 
 
-    getNameFromId(id){ //move this into the DB
-        if(id == 3333) //temporary solution for now
+    getNameFromId(devId){ //move this into the DB
+        if(devId == 3333) //temporary solution for now
             return "ColinLi";
-        else if(id == 4444)
+        else if(devId == 4444)
             return "JoshuaHidalgo";
-        else if(id == 5555)
+        else if(devId == 5555)
             return "WillGreenwood";
         else 
             return null
     }
 
     //log location data into db
-    async logData(deviceId, timestamp, lat, long){
-        const fakeData = {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [ -117.237146, 32.8809435 ] },
-            properties: {
-                speed: 0,
-                battery_state: 'unplugged',
-                motion: [],
-                timestamp: '2024-06-14T23:48:58Z',
-                horizontal_accuracy: 6,
-                speed_accuracy: 1,
-                vertical_accuracy: 1,
-                battery_level: 0.51,
-                wifi: 'UCSD-PROTECTED',
-                unique_id: 'EB728BD6-42F0-4868-B899-698164B4CBE2',
-                course: 228,
-                device_id: '3333',
-                altitude: 119,
-                course_accuracy: 180
+    async logData(deviceId, uid, timestamp, lat, long){
+        let name = null;
+        if(uid == null){
+            name = this.getNameFromId(deviceId);
+        } else {
+            name = await this.db.getNameFromUID(uid)
+        }
+        if(name == null || name.length == 0){
+            console.log("No name found for uid", uid);
+            name = this.getNameFromId(deviceId);
+            if(name == null){
+                console.error("No name found for UID, devID", uid, deviceId);
+                return;
+            } else {
+                await this.db.updateUser(uid, name);
+                console.log("Updated user", uid, name)
             }
         }
-        const name = this.getNameFromId(deviceId);
         try {
             await this.db.insertLocationData(name, lat, long, timestamp);
             this.lastInsert = {name, lat, long, timestamp};
