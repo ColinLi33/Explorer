@@ -131,7 +131,6 @@ class Logger{
 
     //log location data into db
     async logData(deviceId, uid, timestamp, lat, long){
-        console.log("TEST", uid, lat, long, timestamp);
         let name = null;
         if(uid == null){
             name = this.getNameFromId(deviceId);
@@ -145,8 +144,12 @@ class Logger{
                 console.error("No name found for UID, devID", uid, deviceId);
                 return;
             } else {
-                await this.db.updateUser(uid, name);
-                console.log("Updated user", uid, name)
+                try{
+                    await this.db.updateUser(uid, name);
+                    console.log("Updated user", uid, name)
+                } catch {
+                    console.error("Error updating user", uid, name);
+                }
             }
         }
         try {
