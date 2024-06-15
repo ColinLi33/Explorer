@@ -131,6 +131,7 @@ class Logger{
 
     //log location data into db
     async logData(deviceId, uid, timestamp, lat, long){
+        console.log("TEST", uid, lat, long, timestamp);
         let name = null;
         if(uid == null){
             name = this.getNameFromId(deviceId);
@@ -154,7 +155,7 @@ class Logger{
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
-                console.log("Inserted data", name, lat, long, timestamp);
+                console.log("Inserted data", name, uid, lat, long, timestamp);
             }
         } catch(error){
             console.error('Error inserting location data:', error);
