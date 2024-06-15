@@ -21,7 +21,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 </p>
 
 - Hosted on web at [ColinLi.me](http://colinli.me/)
-- Automatically hooks onto Life360 data using custom API and logs locations and timestamp of every member in your circle
+- No longer uses Life360 (their API has shutdown, working on a permanent solution, but currently using https://github.com/aaronpk/Overland-iOS)
 - Viewable map for each member
 - Fog of war enabled to darken areas you haven't been
 
@@ -29,9 +29,8 @@ Track you and your friends' travel experiences, uncovering your journey over tim
     <h2 align = "center"> To-Do</h2>
 </p>
 
-- ~~Put on AWS~~ 
-- ~~Make website~~
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
+- Add accounts to improve privacy, only allow people to see your map if they are your friend
 - Be able to compare to other people by overlaying two maps on top of each other
 
 
