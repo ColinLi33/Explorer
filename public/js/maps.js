@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     dragging: true
 }).addTo(map);
 var worldPolygon = turf.polygon([[[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]]);
-const maxDistance = 4; //max distance in km between two points
+const maxDistance = 2.5; //max distance in km between two points
 var segments = [];
 var segment = [points[0]];
 for (let i = 1; i < points.length; i++) {
