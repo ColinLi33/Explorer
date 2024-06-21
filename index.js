@@ -35,7 +35,7 @@ app.get('/map/:personId', async (req, res) => {
 
         const data = points.map(point => [point.latitude, point.longitude]);
         const dbscan = new densityClustering.DBSCAN();
-        const clusters = dbscan.run(data, 0.0005, 1); // make 2nd param lower for more clusters
+        const clusters = dbscan.run(data, 0.00025, 1); // make 2nd param lower for more clusters
 
         const representativePoints = clusters.map(cluster => {
             const latitudes = cluster.map(index => points[index].latitude);
