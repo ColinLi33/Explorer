@@ -19,6 +19,20 @@ class Database {
 			});
 		});
 	}
+    disconnect() {
+        return new Promise((resolve, reject) => {
+            this.connection.end((err) => {
+                if (err) {
+                    console.error('Error disconnecting from MySQL:', err);
+                    reject(err);
+                } else {
+                    console.log('Disconnected from MySQL');
+                    resolve();
+                }
+            });
+        });
+    }
+
     //helper function
     query(sql, values = []) {
         return new Promise((resolve, reject) => {
@@ -34,19 +48,25 @@ class Database {
     }
     //set up DB if needed
 	async initialize() {
-		await this.connect();
-		await this.query(`
-			CREATE TABLE IF NOT EXISTS LocationData (
-				location_id INT AUTO_INCREMENT PRIMARY KEY,
-				person_name VARCHAR(255),
-				location POINT SRID 4326,
-				timestamp INT,
-                INDEX personNameIndex (person_name)
-            )
-		`);
-        await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
+        try {
+            await this.connect();
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS LocationData (
+                    location_id INT AUTO_INCREMENT PRIMARY KEY,
+                    person_name VARCHAR(255),
+                    location POINT SRID 4326,
+                    timestamp INT,
+                    INDEX personNameIndex (person_name)
+                )
+            `);
+            await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
+        } catch (err) {
+            console.error('Database operation failed:', err);
+        } finally {
+            await this.disconnect();
+        }
 	}
-    
+
     //insert location data into DB
     async insertLocationData(personName, latitude, longitude, timestamp) {
         const point = `POINT(${latitude} ${longitude})`;
