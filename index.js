@@ -15,6 +15,10 @@ const dbConfig = {
     user: process.env.DBUSER,
     password: process.env.DBPASS,
     database: process.env.DBNAME,
+    connectionLimit: 15,
+    waitForConnections: true,
+    keepAliveInitialDelay: 10000,
+    enableKeepAlive: true,
 };
 
 app.get('/', async (req, res) => {
@@ -50,43 +54,7 @@ app.get('/map/:personId', async (req, res) => {
         console.error(error);
     }
 });
-/*
-app.get('/debugupdate', (req, res) => {
-    console.log("TESTING UPDATE")
-    let data = {locations: []}
-    const fakeData = {
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ -117.237146, 32.8809435 ] },
-        properties: {
-            speed: 0,
-            battery_state: 'unplugged',
-            motion: [],
-            timestamp: new Date().toISOString(),
-            horizontal_accuracy: 6,
-            speed_accuracy: 1,
-            vertical_accuracy: 1,
-            battery_level: 0.51,
-            wifi: 'UCSD-PROTECTED',
-            course: 228,
-            device_id: '3333',
-            altitude: 119,
-            course_accuracy: 180
-        }
-    }
-    data.locations.push(fakeData);
 
-    for(let i = 0; i < data.locations.length; i++){
-        const locData = data.locations[i];
-        const deviceId = locData.properties.device_id
-        const uid = locData.properties.unique_id;
-        const timestamp = locData.properties.timestamp;
-        const epochTime = new Date(timestamp).getTime() / 1000;
-        const lat = locData.geometry.coordinates[1];
-        const long = locData.geometry.coordinates[0];
-        logger.logData(deviceId, uid, epochTime, lat, long);
-    }
-});
-*/
 app.post('/update', async (req, res) => {
     const data = req.body;
     if(data == null){

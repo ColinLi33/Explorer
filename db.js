@@ -3,40 +3,12 @@ const mysql = require('mysql2');
 class Database {
     constructor(config) { 
 	    this.config = config;
-	    this.connection = mysql.createConnection(config);
+	    this.pool = mysql.createPool(config);
     }
-    //connect to db
-	connect() {
-		return new Promise((resolve, reject) => {
-			this.connection.connect((err) => {
-				if (err) {
-					console.error('Error connecting to MySQL:', err);
-					reject(err);
-				} else {
-					console.log('Connected to MySQL');
-					resolve();
-				}
-			});
-		});
-	}
-    disconnect() {
-        return new Promise((resolve, reject) => {
-            this.connection.end((err) => {
-                if (err) {
-                    console.error('Error disconnecting from MySQL:', err);
-                    reject(err);
-                } else {
-                    console.log('Disconnected from MySQL');
-                    resolve();
-                }
-            });
-        });
-    }
-
     //helper function
     query(sql, values = []) {
         return new Promise((resolve, reject) => {
-            this.connection.query(sql, values, (err, results) => {
+            this.pool.query(sql, values, (err, results) => {
                 if (err) {
                     console.error('Error executing query:', err);
                     reject(err);
@@ -46,27 +18,33 @@ class Database {
             });
         });
     }
+    closePool() {
+        return new Promise((resolve, reject) => {
+            this.pool.end((err) => {
+                if (err) {
+                    console.error('Error closing pool:', err);
+                    reject(err);
+                } else {
+                    console.log('Connection pool closed');
+                    resolve();
+                }
+            });
+        });
+    }
     //set up DB if needed
 	async initialize() {
-        try {
-            await this.connect();
-            await this.query(`
-                CREATE TABLE IF NOT EXISTS LocationData (
-                    location_id INT AUTO_INCREMENT PRIMARY KEY,
-                    person_name VARCHAR(255),
-                    location POINT SRID 4326,
-                    timestamp INT,
-                    INDEX personNameIndex (person_name)
-                )
-            `);
-            await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
-        } catch (err) {
-            console.error('Database operation failed:', err);
-        } finally {
-            await this.disconnect();
-        }
+		await this.query(`
+			CREATE TABLE IF NOT EXISTS LocationData (
+				location_id INT AUTO_INCREMENT PRIMARY KEY,
+				person_name VARCHAR(255),
+				location POINT SRID 4326,
+				timestamp INT,
+                INDEX personNameIndex (person_name)
+            )
+		`);
+        await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
 	}
-
+    
     //insert location data into DB
     async insertLocationData(personName, latitude, longitude, timestamp) {
         const point = `POINT(${latitude} ${longitude})`;
@@ -127,16 +105,5 @@ class Database {
     async updateUser(id, name){
         await this.query('INSERT INTO Users (id, person_name) VALUES (?, ?)', [id, name]);
     }
- 
-    //close db
-	close() {
-		this.connection.end((err) => {
-			if (err) {
-				console.error('Error closing the database:', err);
-			} else {
-				console.log('Database connection closed');
-			}
-		});
-	}
 }
 module.exports = Database;
