@@ -78,6 +78,10 @@ app.get('/debug', (req, res) => {
     res.send(logger.lastInsert);
 });
 
+app.get('/eds124b', (req, res) => {
+    res.render('eds');
+});
+
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
