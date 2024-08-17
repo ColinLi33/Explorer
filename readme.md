@@ -28,9 +28,8 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 <p align="center">
     <h2 align = "center"> To-Do</h2>
 </p>
-- Make my own app to track locations ([work in progress](https://github.com/ColinLi33/ExplorerApp))
+
+- Make my own app to track locations [(Work in progress)](https://github.com/ColinLi33/ExplorerApp)
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
 - Add accounts to improve privacy, only allow people to see your map if they are your friend
 - Be able to compare to other people by overlaying two maps on top of each other
-
-
