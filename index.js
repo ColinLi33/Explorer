@@ -181,7 +181,7 @@ class Logger{
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
-                console.log("Inserted data", username, uid, lat, long, timestamp);
+                console.log("Inserted data", username, lat, long, timestamp);
             }
             return true;
         } catch(error){
