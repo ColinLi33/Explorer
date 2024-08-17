@@ -42,7 +42,12 @@ class Database {
                 INDEX personNameIndex (person_name)
             )
 		`);
-        await this.query(`CREATE TABLE IF NOT EXISTS Users (id CHAR(36) PRIMARY KEY, person_name VARCHAR(255))`);
+        await this.query(`CREATE TABLE IF NOT EXISTS Users (
+            id INT AUTO_INCREMENT PRIMARY KEY, 
+            username VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL
+            )
+        `);
 	}
     
     //insert location data into DB
@@ -105,5 +110,17 @@ class Database {
     async updateUser(id, name){
         await this.query('INSERT INTO Users (id, person_name) VALUES (?, ?)', [id, name]);
     }
+
+    async registerUser(username, hashedPassword) {
+        //users table has id, username, password
+        const result = await this.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
+        return result;
+    }
+    
+    async getUserByUsername(username) {
+        const [rows] = await this.query('SELECT * FROM users WHERE username = ?', [username]);
+        return rows;
+    }
+
 }
 module.exports = Database;

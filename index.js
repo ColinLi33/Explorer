@@ -1,8 +1,9 @@
 const express = require('express');
 require('dotenv').config();
-const Life360 = require('./life360');
 const Database = require('./db')
 const densityClustering = require('density-clustering');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const port = 80;
 const app = express();
@@ -20,6 +21,8 @@ const dbConfig = {
     keepAliveInitialDelay: 10000,
     enableKeepAlive: true,
 };
+
+const jwtSecret = process.env.JWTSECRET;
 
 app.get('/', async (req, res) => {
     try{
@@ -55,23 +58,90 @@ app.get('/map/:personId', async (req, res) => {
     }
 });
 
-app.post('/update', async (req, res) => {
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    console.log("registering:", username, password);
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await logger.db.registerUser(username, hashedPassword);
+        res.status(201).json({success: true, message: 'User registered successfully'});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false, message: 'Error registering user'});
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    console.log("logging in", username, password);
+    try {
+        const user = await logger.db.getUserByUsername(username);
+        console.log(user);
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+        const accessToken = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
+        const refreshToken = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
+        console.log("Login successful");
+        res.json({userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false, message: 'Error logging in'});
+    }
+});
+
+app.post('/refresh-token', (req, res) => {
+    const { refreshToken } = req.body;
+    console.log("refreshing token", refreshToken);
+    if (!refreshToken) {
+        return res.status(401).json({ message: 'Access denied' });
+    }
+    try {
+        const decoded = jwt.verify(refreshToken, jwtSecret);
+        const newAccessToken = jwt.sign({ userId: decoded.userId }, jwtSecret, { expiresIn: '1h' });
+        const newRefreshToken = jwt.sign({ userId: decoded.userId }, jwtSecret, { expiresIn: '7d' }); 
+        res.json({accessToken: newAccessToken, refreshToken: newRefreshToken});
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid refresh token' });
+    }
+});
+
+const authenticate = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied' });
+    }
+    try {
+        const decoded = jwt.verify(token, jwtSecret);
+        req.userId = decoded.userId;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid token' });
+    }
+};
+
+
+app.post('/update', authenticate, async (req, res) => {
     const data = req.body;
+    console.log(data)
     if(data == null){
         res.status(200).send({"result": "ok"});
         return 
     }
-    for(let i = 0; i < data.locations.length; i++){
-        const locData = data.locations[i];
-        const deviceId = locData.properties.device_id
-        const uid = locData.properties.unique_id;
-        const timestamp = locData.properties.timestamp;
-        const epochTime = new Date(timestamp).getTime() / 1000;
-        const lat = locData.geometry.coordinates[1];
-        const long = locData.geometry.coordinates[0];
-        logger.logData(deviceId, uid, epochTime, lat, long);
+    const username = data.username;
+    const lat = data.location.coords.latitude;
+    const long = data.location.coords.longitude;
+    const timestamp = Math.floor(data.location.timestamp / 1000);
+    result = await logger.logData(username, timestamp, lat, long);
+    if(result){
+        res.status(200).send({"result": "ok"});
+    } else {
+        res.status(500).send({"result": "error"});
     }
-    res.status(200).send({"result": "ok"});
 });
 
 app.get('/debug', (req, res) => {
@@ -102,45 +172,26 @@ class Logger{
     }
 
     //log location data into db
-    async logData(deviceId, uid, timestamp, lat, long){
-        let name = null;
-        if(uid == null){
-            name = this.getNameFromId(deviceId);
-        } else {
-            name = await this.db.getNameFromUID(uid)
-        }
-        if(name == null){
-            console.log("No name found for uid", uid);
-            name = this.getNameFromId(deviceId);
-            if(name == null){
-                console.error("No name found for UID, devID", uid, deviceId);
-                return;
-            } else {
-                try{
-                    await this.db.updateUser(uid, name);
-                    console.log("Updated user", uid, name)
-                } catch {
-                    console.error("Error updating user", uid, name);
-                }
-            }
-        }
+    async logData(username, timestamp, lat, long){
         try {
-            await this.db.insertLocationData(name, lat, long, timestamp);
-            this.lastInsert = {name, lat, long, timestamp};
+            await this.db.insertLocationData(username, lat, long, timestamp);
+            this.lastInsert = {username, lat, long, timestamp};
             this.insertCounter++;
             if(this.insertCounter >= 100){
                 this.insertCounter = 0;
-                console.log("Inserted data", name, uid, lat, long, timestamp);
+                console.log("Inserted data", username, uid, lat, long, timestamp);
             }
+            return true;
         } catch(error){
             console.error('Error inserting location data:', error);
+            return false;
         }
     }
 }
 
 async function startServer() {
     try {
-        app.listen(port, '0.0.0.0', () => {
+        app.listen(port, '192.168.1.145', () => {
             console.log(`Server is running on port ${port}`);
         });
     } catch(error){
