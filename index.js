@@ -67,6 +67,9 @@ app.post('/register', async (req, res) => {
         res.status(201).json({success: true, message: 'User registered successfully'});
     } catch (error) {
         console.error(error);
+        if(error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({success: false, message: 'Username already exists'});
+        }
         res.status(500).json({success: false, message: 'Error registering user'});
     }
 });
@@ -127,7 +130,6 @@ const authenticate = (req, res, next) => {
 
 app.post('/update', authenticate, async (req, res) => {
     const data = req.body;
-    console.log(data)
     if(data == null){
         res.status(200).send({"result": "ok"});
         return 
