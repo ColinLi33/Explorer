@@ -146,10 +146,6 @@ app.post('/update', authenticate, async (req, res) => {
     }
 });
 
-app.get('/debug', (req, res) => {
-    res.send(logger.lastInsert);
-});
-
 app.get('/eds124b', (req, res) => {
     res.render('eds');
 });
@@ -161,17 +157,6 @@ class Logger{
         this.insertCounter = 0;
         this.lastInsert = null;
     }; 
-
-    getNameFromId(devId){ //move this into the DB
-        if(devId == 3333) //temporary solution for now
-            return "ColinLi";
-        else if(devId == 4444)
-            return "JoshuaHidalgo";
-        else if(devId == 5555)
-            return "WillGreenwood";
-        else 
-            return null
-    }
 
     //log location data into db
     async logData(username, timestamp, lat, long){
