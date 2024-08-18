@@ -191,16 +191,30 @@ app.post('/update', authenticate, async (req, res) => {
         res.status(200).send({"result": "ok"});
         return 
     }
+    
     const username = data.username;
-    const lat = data.location.coords.latitude;
-    const long = data.location.coords.longitude;
-    const timestamp = Math.floor(data.location.timestamp / 1000);
-    result = await logger.logData(username, timestamp, lat, long);
-    if(result){
-        res.status(200).send({"result": "ok"});
+    if(data.location.length > 0){
+        for (let i = 0; i < data.location.length; i++) {
+            const lat = data.location[i].coords.latitude;
+            const long = data.location[i].coords.longitude;
+            const timestamp = Math.floor(data.location[i].timestamp / 1000);
+            result = await logger.logData(username, timestamp, lat, long);
+            if(!result){
+                res.status(500).send({"result": "error"});
+                return
+            }
+        }
     } else {
-        res.status(500).send({"result": "error"});
+        const lat = data.location.coords.latitude;
+        const long = data.location.coords.longitude;
+        const timestamp = Math.floor(data.location.timestamp / 1000);
+        result = await logger.logData(username, timestamp, lat, long);
+        if(!result){
+            res.status(500).send({"result": "error"});
+            return
+        }
     }
+    res.status(200).send({"result": "ok"});
 });
 
 app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy setting on map
