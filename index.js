@@ -62,7 +62,7 @@ const optionalAuthenticate = (req, res, next) => { //for home page
             req.userId = decoded.userId;
             req.username = decoded.username;
         } catch (error) {
-            // Token is invalid, but we don't return an error
+            //do nothing
         }
     }
     next();
@@ -85,6 +85,10 @@ app.get('/', optionalAuthenticate, async (req, res) => {
 
 app.get('/login', (req, res) => {
     res.render('login');
+});
+
+app.get('/about', (req, res) => {
+    res.render('about');
 });
 
 app.get('/map/:username', optionalAuthenticate, async (req, res) => {
@@ -200,7 +204,7 @@ app.post('/update', authenticate, async (req, res) => {
         return 
     }
     const username = data.username;
-    console.log("updating", data);
+    console.log("updating", username);
     if(data.location.length > 0){
         for (let i = 0; i < data.location.length; i++) {
             const lat = data.location[i].coords.latitude;

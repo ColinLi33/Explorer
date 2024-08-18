@@ -1,19 +1,15 @@
 window.onload = function() {
-    clearFormFields();
+    // clearFormFields();
 };
 
 function clearFormFields() {
     const registrationForm = document.getElementById('registrationForm');
     const loginForm = document.getElementById('loginForm');
-
     if (registrationForm) {
-        document.querySelector('#registrationForm input[name="username"]').value = '';
-        document.querySelector('#registrationForm input[name="password"]').value = '';
+        registrationForm.reset();
     }
-
     if (loginForm) {
-        document.querySelector('#loginForm input[name="username"]').value = '';
-        document.querySelector('#loginForm input[name="password"]').value = '';
+        loginForm.reset();
     }
 }
 
