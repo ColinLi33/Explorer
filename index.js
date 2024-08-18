@@ -4,12 +4,17 @@ const Database = require('./db')
 const densityClustering = require('density-clustering');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const cookieParser = require('cookie-parser');
 const port = 80;
 const app = express();
+
+const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
+
 app.use(express.static('public'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
+app.use(cookieParser());
 
 const dbConfig = {
     host: 'localhost',
@@ -24,21 +29,73 @@ const dbConfig = {
 
 const jwtSecret = process.env.JWTSECRET;
 
-app.get('/', async (req, res) => {
-    try{
-        // const people = await log.db.getAllPersonName();
-        // res.render('home', {peopleList : people});
-        //only put me on it for now
-        res.render('home', {peopleList: ['ColinLi']})
-    } catch(error){
+const authenticate = (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+    }
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied' });
+    }
+    try {
+        const decoded = jwt.verify(token, jwtSecret);
+        req.userId = decoded.userId;
+        req.username = decoded.username;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid token' });
+    }
+};
+
+const optionalAuthenticate = (req, res, next) => { //for home page
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+    }
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, jwtSecret);
+            req.userId = decoded.userId;
+            req.username = decoded.username;
+        } catch (error) {
+            // Token is invalid, but we don't return an error
+        }
+    }
+    next();
+};
+
+app.get('/', optionalAuthenticate, async (req, res) => {
+    try {
+        const isAuthenticated = !!req.username;
+        dropdownList = [];
+        if(isAuthenticated && req.username != 'ColinLi'){ //so theres not 2 colins
+            dropdownList.push(req.username);
+        }
+        dropdownList.push('ColinLi');
+        res.render('home', { peopleList: dropdownList, isAuthenticated: isAuthenticated, username: req.username });
+    } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-app.get('/map/:personId', async (req, res) => {
-    const personId = req.params.personId;
+app.get('/map/:username', optionalAuthenticate, async (req, res) => {
+    const username = req.params.username;
     try {
-        const points = await logger.db.getAllData(personId);
+        const user = await logger.db.getUserByUsername(username);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const isPublic = user.public; 
+        const isOwner = req.username === username;
+        if(!isPublic && !isOwner){ //send them back to the shadow realm
+            return res.send('<script>alert("The map you tried to access is private."); window.location.href = "/";</script>');
+        }
+        const points = await logger.db.getAllData(username);
 
         const data = points.map(point => [point.latitude, point.longitude]);
         const dbscan = new densityClustering.DBSCAN();
@@ -52,15 +109,18 @@ app.get('/map/:personId', async (req, res) => {
             return { latitude: centroidLatitude, longitude: centroidLongitude };
         });
 
-        res.render('map', { pointList: representativePoints, name: personId });
+        const shareableLink = isPublic ? `${req.protocol}://${req.get('host')}/map/${username}` : '';
+
+        res.render('map', { pointList: representativePoints, name: username, isPublic: isPublic, isOwner: isOwner, shareableLink: shareableLink });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
-    console.log("registering:", username, password);
+    console.log("registering:", username);
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await logger.db.registerUser(username, hashedPassword);
@@ -76,10 +136,9 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log("logging in", username, password);
+    console.log("logging in", username);
     try {
         const user = await logger.db.getUserByUsername(username);
-        console.log(user);
         if (!user) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
@@ -87,45 +146,43 @@ app.post('/login', async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
-        const accessToken = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
-        const refreshToken = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
+        const accessToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '1h' });
+        const refreshToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
+        
+        res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
         console.log("Login successful");
-        res.json({userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
+        res.json({success: true, userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
     } catch (error) {
         console.error(error);
         res.status(500).json({success: false, message: 'Error logging in'});
     }
 });
 
+app.post('/logout', (req, res) => {
+    console.log("logging out");
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.sendStatus(200);
+});
+
 app.post('/refresh-token', (req, res) => {
-    const { refreshToken } = req.body;
-    console.log("refreshing token", refreshToken);
+    const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
+    console.log("refreshing token");
     if (!refreshToken) {
         return res.status(401).json({ message: 'Access denied' });
     }
     try {
         const decoded = jwt.verify(refreshToken, jwtSecret);
-        const newAccessToken = jwt.sign({ userId: decoded.userId }, jwtSecret, { expiresIn: '1h' });
-        const newRefreshToken = jwt.sign({ userId: decoded.userId }, jwtSecret, { expiresIn: '7d' }); 
+        const newAccessToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '1h' });
+        const newRefreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '7d' }); 
+        res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: isSecure});
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
         res.json({accessToken: newAccessToken, refreshToken: newRefreshToken});
     } catch (error) {
         res.status(401).json({ message: 'Invalid refresh token' });
     }
 });
-
-const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ message: 'Access denied' });
-    }
-    try {
-        const decoded = jwt.verify(token, jwtSecret);
-        req.userId = decoded.userId;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Invalid token' });
-    }
-};
 
 
 app.post('/update', authenticate, async (req, res) => {
@@ -143,6 +200,19 @@ app.post('/update', authenticate, async (req, res) => {
         res.status(200).send({"result": "ok"});
     } else {
         res.status(500).send({"result": "error"});
+    }
+});
+
+app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy setting on map
+    const { isPublic } = req.body;
+    const username = req.username;
+
+    try {
+        await logger.db.updateUserPrivacy(username, isPublic);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error updating privacy setting' });
     }
 });
 

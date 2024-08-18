@@ -45,7 +45,8 @@ class Database {
         await this.query(`CREATE TABLE IF NOT EXISTS Users (
             id INT AUTO_INCREMENT PRIMARY KEY, 
             username VARCHAR(255) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL
+            password VARCHAR(255) NOT NULL,
+            public BOOLEAN DEFAULT FALSE
             )
         `);
 	}
@@ -99,18 +100,6 @@ class Database {
         return personNamesList;
     }
 
-    async getNameFromUID(uid){
-        const results = await this.query('SELECT person_name FROM Users WHERE id = ?', [uid]);
-        if(results == null || results.length == 0){
-            return null;
-        }
-        return results[0].person_name;
-    }
-
-    async updateUser(id, name){
-        await this.query('INSERT INTO Users (id, person_name) VALUES (?, ?)', [id, name]);
-    }
-
     async registerUser(username, hashedPassword) {
         //users table has id, username, password
         const result = await this.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
@@ -120,6 +109,14 @@ class Database {
     async getUserByUsername(username) {
         const [rows] = await this.query('SELECT * FROM users WHERE username = ?', [username]);
         return rows;
+    }
+
+    async updateUserPrivacy(username, isPublic) {
+        try {
+            const result = await this.query('UPDATE users SET public = ? WHERE username = ?', [isPublic, username]);
+        } catch (error) {
+            throw error;
+        }
     }
 
 }
