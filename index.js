@@ -83,6 +83,10 @@ app.get('/', optionalAuthenticate, async (req, res) => {
     }
 });
 
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
 app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     const username = req.params.username;
     try {
@@ -123,8 +127,12 @@ app.post('/register', async (req, res) => {
     console.log("registering:", username);
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await logger.db.registerUser(username, hashedPassword);
-        res.status(201).json({success: true, message: 'User registered successfully'});
+        userId = await logger.db.registerUser(username, hashedPassword);
+        const accessToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '1h' });
+        const refreshToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
+        res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
+        res.json({success: true, userId: userId, accessToken: accessToken, refreshToken: refreshToken });
     } catch (error) {
         console.error(error);
         if(error.code === 'ER_DUP_ENTRY') {
@@ -191,8 +199,8 @@ app.post('/update', authenticate, async (req, res) => {
         res.status(200).send({"result": "ok"});
         return 
     }
-    
     const username = data.username;
+    console.log("updating", data);
     if(data.location.length > 0){
         for (let i = 0; i < data.location.length; i++) {
             const lat = data.location[i].coords.latitude;

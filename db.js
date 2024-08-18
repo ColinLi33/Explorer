@@ -103,7 +103,7 @@ class Database {
     async registerUser(username, hashedPassword) {
         //users table has id, username, password
         const result = await this.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-        return result;
+        return result.insertId;
     }
     
     async getUserByUsername(username) {
