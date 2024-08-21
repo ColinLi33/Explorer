@@ -102,18 +102,18 @@ class Database {
 
     async registerUser(username, hashedPassword) {
         //users table has id, username, password
-        const result = await this.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
+        const result = await this.query('INSERT INTO Users (username, password) VALUES (?, ?)', [username, hashedPassword]);
         return result.insertId;
     }
     
     async getUserByUsername(username) {
-        const [rows] = await this.query('SELECT * FROM users WHERE username = ?', [username]);
+        const [rows] = await this.query('SELECT * FROM Users WHERE username = ?', [username]);
         return rows;
     }
 
     async updateUserPrivacy(username, isPublic) {
         try {
-            const result = await this.query('UPDATE users SET public = ? WHERE username = ?', [isPublic, username]);
+            const result = await this.query('UPDATE Users SET public = ? WHERE username = ?', [isPublic, username]);
         } catch (error) {
             throw error;
         }
