@@ -29,7 +29,7 @@ const dbConfig = {
 
 const jwtSecret = process.env.JWTSECRET;
 
-const authenticate = (req, res, next) => {
+const authenticate = (req, res, next) => { //need to be logged in to access this route
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
         token = req.headers.authorization.split(' ')[1];
@@ -43,13 +43,13 @@ const authenticate = (req, res, next) => {
         const decoded = jwt.verify(token, jwtSecret);
         req.userId = decoded.userId;
         req.username = decoded.username;
-        next();
+        next(); //go next
     } catch (error) {
         res.status(401).json({ message: 'Invalid token' });
     }
 };
 
-const optionalAuthenticate = (req, res, next) => { //for home page
+const optionalAuthenticate = (req, res, next) => { //dont need to be logged in to access this route
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
         token = req.headers.authorization.split(' ')[1];
@@ -62,15 +62,15 @@ const optionalAuthenticate = (req, res, next) => { //for home page
             req.userId = decoded.userId;
             req.username = decoded.username;
         } catch (error) {
-            //do nothing
+            //they are not logged in
         }
     }
-    next();
+    next(); //go next
 };
 
 app.get('/', optionalAuthenticate, async (req, res) => {
     try {
-        const isAuthenticated = !!req.username;
+        const isAuthenticated = !!req.username; //if username exists
         dropdownList = [];
         if(isAuthenticated && req.username != 'ColinLi'){ //so theres not 2 colins
             dropdownList.push(req.username);
@@ -91,7 +91,7 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-app.get('/map/:username', optionalAuthenticate, async (req, res) => {
+app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to a persons map
     const username = req.params.username;
     try {
         const user = await logger.db.getUserByUsername(username);
@@ -126,7 +126,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     }
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', async (req, res) => { //register account
     const { username, password } = req.body;
     console.log("registering:", username);
     try {
@@ -146,7 +146,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/login', async (req, res) => { //login account
     const { username, password } = req.body;
     console.log("logging in", username);
     try {
@@ -171,14 +171,14 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/logout', (req, res) => {
+app.get('/logout', (req, res) => { //logout 
     console.log("logging out");
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     res.sendStatus(200);
 });
 
-app.post('/refresh-token', (req, res) => {
+app.post('/refresh-token', (req, res) => { //refresh auth token given refresh token
     const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
     console.log("refreshing token");
     if (!refreshToken) {
@@ -197,7 +197,7 @@ app.post('/refresh-token', (req, res) => {
 });
 
 
-app.post('/update', authenticate, async (req, res) => {
+app.post('/update', authenticate, async (req, res) => { //update location data
     const data = req.body;
     if(data == null){
         res.status(200).send({"result": "ok"});
@@ -242,7 +242,7 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
     }
 });
 
-app.get('/eds124b', (req, res) => {
+app.get('/eds124b', (req, res) => { //ignore this its for a class
     res.render('eds');
 });
 
