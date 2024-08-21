@@ -20,6 +20,39 @@
             max-height: 50px;
             z-index: 9999; 
         }
+        .settings-icon {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            max-width: 50px;
+            max-height: 50px;
+            z-index: 9999;
+            cursor: pointer;
+        }
+        
+        .dropdown {
+            position: absolute;
+            top: 50px;
+            right: 70px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            display: none;
+        }
+        
+        .dropdown label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown input[type="text"] {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
@@ -27,10 +60,59 @@
     <a href="/">
         <img src="/images/logo.png" alt="Logo" class="logo">
     </a>
+    <% if (isOwner) { %>
+        <img src="/images/settings2.png" alt="Settings" class="settings-icon" onclick="toggleDropdown()">
+        <div id="settingsDropdown" class="dropdown">
+            <label for="privacySelector">Page Privacy:</label>
+            <select id="privacySelector" onchange="updatePrivacy()">
+                <option value="private" <%= !isPublic ? 'selected' : '' %>>Private</option>
+                <option value="public" <%= isPublic ? 'selected' : '' %>>Public</option>
+            </select>
+            <br>
+            <label for="shareableLink">Sharable Link:</label>
+            <input type="text" id="shareableLink" value="<%= shareableLink %>" readonly>
+        </div>
+    <% } %>
     <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/turf/turf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simplify-js@1.2.4/simplify.min.js"></script>
     <script src="/js/maps.js"></script>
+    <script>
+        function toggleDropdown() {
+            var dropdown = document.getElementById("settingsDropdown");
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        }
+        
+        function updatePrivacy() {
+            var privacySelector = document.getElementById("privacySelector");
+            var shareableLink = document.getElementById("shareableLink");
+            var isPublic = privacySelector.value === "public";
+
+            fetch('/updatePrivacy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isPublic: isPublic })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Privacy setting updated successfully');
+                    if (isPublic) {
+                        shareableLink.value = window.location.href;
+                    } else {
+                        shareableLink.value = "";
+                    }
+                } else {
+                    console.error('Error updating privacy setting');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating privacy setting', error);
+            });
+        }
+    </script>
 </body>
 </html>

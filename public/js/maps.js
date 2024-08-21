@@ -38,5 +38,5 @@ segments.forEach(segment => {
 var resultPolygon = L.polygon(worldPolygon.geometry.coordinates, {
     color: 'black',
     fillColor: 'black',
-    fillOpacity: 0.85
+    fillOpacity: 0.7
 }).addTo(map);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explorer</title>
+    <title>Login - Explorer</title>
     <style>
         .header {
             text-align: center;
@@ -16,6 +16,16 @@
             max-width: 50px;
             max-height: 50px;
             z-index: 9999;
+        }
+        .resume-container {
+            margin-top: 50px;
+            width: 100%;
+            height: 600px;
+        }
+        .resume-pdf {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
         .menu {
             background-color: #f2f2f2;
@@ -38,7 +48,7 @@
         }
     </style>
 </head>
-<body data-is-authenticated="<%= isAuthenticated %>">
+<body>
     <div class="header">
         <h1>Explorer</h1>
     </div>
@@ -49,28 +59,24 @@
     <div class="menu">
         <ul>
             <li><a href="/">Home</a></li>
-            <% if (!isAuthenticated) { %>
-                <li><a href="/login">Login</a></li>
-            <% } %>
             <li><a href="/about">About Me</a></li>
         </ul>
     </div>
 
-    <% if (isAuthenticated) { %>
-        <h1>Welcome, <%= username %>!</h1>
-        <form id="logoutForm">
-            <button type="submit">Logout</button>
+    <h2>Register</h2>
+        <form id="registrationForm">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Register</button>
         </form>
-    <% } %>
-    <h1>Select a Map:</h1>
-    <form id="personIdForm">
-        <select id="personIdDropdown">
-        </select>
-        <button type="submit">Go to Map</button>
-    </form>
 
-    <div id="people" data-points="<%= JSON.stringify(peopleList) %>"></div>
-    <body data-is-authenticated="<%= isAuthenticated %>">
-    <script src="/js/home.js"></script>
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+
+    <script src="/js/login.js"></script>
 </body>
 </html>
