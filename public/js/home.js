@@ -23,7 +23,7 @@ if (isAuthenticated) { //if user is logged in
     document.getElementById('logoutForm').addEventListener('submit', async (event) => {
         event.preventDefault();
         const response = await fetch('/logout', {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }

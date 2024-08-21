@@ -171,7 +171,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.post('/logout', (req, res) => {
+app.get('/logout', (req, res) => {
     console.log("logging out");
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
