@@ -9,6 +9,7 @@ let port = 80;
 const app = express();
 const https = require('https');
 const fs = require('fs');
+const logs = require('pino')(); //logger 
 let options;
 
 if(process.env.SERVER === 'aws'){
@@ -139,27 +140,28 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
 
 app.post('/register', async (req, res) => { //register account
     const { username, password } = req.body;
-    console.log("registering:", username);
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         userId = await logger.db.registerUser(username, hashedPassword);
-        const accessToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '1h' });
-        const refreshToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
+        const accessToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '1d' });
+        const refreshToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '30d' }); // Refresh token valid for 7 days
+        logs.info(`User ${username} registered`);
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
         res.json({success: true, userId: userId, accessToken: accessToken, refreshToken: refreshToken });
     } catch (error) {
         console.error(error);
         if(error.code === 'ER_DUP_ENTRY') {
+            logs.info(`Username ${username} already exists`);
             return res.status(400).json({success: false, message: 'Username already exists'});
         }
+        logs.error('Error registering user:', error);
         res.status(500).json({success: false, message: 'Error registering user'});
     }
 });
 
 app.post('/login', async (req, res) => { //login account
     const { username, password } = req.body;
-    console.log("logging in", username);
     try {
         const user = await logger.db.getUserByUsername(username);
         if (!user) {
@@ -169,21 +171,21 @@ app.post('/login', async (req, res) => { //login account
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
-        const accessToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '1h' });
-        const refreshToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '7d' }); // Refresh token valid for 7 days
-        
+        const accessToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '1d' });
+        const refreshToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '30d' }); // Refresh token valid for 7 days
+        logs.info(`User ${username} logged in`);
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-        console.log("Login successful");
         res.json({success: true, userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
     } catch (error) {
         console.error(error);
+        logs.error('Error logging in:', error);
         res.status(500).json({success: false, message: 'Error logging in'});
     }
 });
 
 app.get('/logout', (req, res) => { //logout 
-    console.log("logging out");
+    logs.info(`User ${req.username} logged out`);
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     res.sendStatus(200);
@@ -191,18 +193,19 @@ app.get('/logout', (req, res) => { //logout
 
 app.post('/refresh-token', (req, res) => { //refresh auth token given refresh token
     const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
-    console.log("refreshing token");
     if (!refreshToken) {
         return res.status(401).json({ message: 'Access denied' });
     }
     try {
         const decoded = jwt.verify(refreshToken, jwtSecret);
-        const newAccessToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '1h' });
-        const newRefreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '7d' }); 
+        const newAccessToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '1d' });
+        const newRefreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' }); 
+        logs.info(`User ${decoded.username} refreshed token`);
         res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: isSecure});
         res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
         res.json({accessToken: newAccessToken, refreshToken: newRefreshToken});
     } catch (error) {
+        logs.error('Error refreshing token:', error);
         res.status(401).json({ message: 'Invalid refresh token' });
     }
 });
@@ -215,7 +218,7 @@ app.post('/update', authenticate, async (req, res) => { //update location data
         return 
     }
     const username = data.username;
-    console.log("updating", username);
+    logs.info(`User ${username} updated location data`);
     if(data.location.length > 0){
         for (let i = 0; i < data.location.length; i++) {
             const lat = data.location[i].coords.latitude;
@@ -243,12 +246,13 @@ app.post('/update', authenticate, async (req, res) => { //update location data
 app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy setting on map
     const { isPublic } = req.body;
     const username = req.username;
-
     try {
         await logger.db.updateUserPrivacy(username, isPublic);
+        logs.info(`User ${username} updated privacy setting to ${isPublic}`);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
+        logs.error('Error updating privacy setting:', error);
         res.status(500).json({ success: false, message: 'Error updating privacy setting' });
     }
 });
@@ -261,23 +265,17 @@ class Logger{
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
         this.db.initialize();
-        this.insertCounter = 0;
-        this.lastInsert = null;
     }; 
 
     //log location data into db
     async logData(username, timestamp, lat, long){
         try {
             await this.db.insertLocationData(username, lat, long, timestamp);
-            this.lastInsert = {username, lat, long, timestamp};
-            this.insertCounter++;
-            if(this.insertCounter >= 100){
-                this.insertCounter = 0;
-                console.log("Inserted data", username, lat, long, timestamp);
-            }
+            logs.info(`Location data inserted for ${username} at ${lat}, ${long}`);
             return true;
         } catch(error){
             console.error('Error inserting location data:', error);
+            logs.error('Error inserting location data:', error);
             return false;
         }
     }
