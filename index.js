@@ -9,10 +9,11 @@ let port = 80;
 const app = express();
 const https = require('https');
 const fs = require('fs');
+let options;
 
 if(process.env.SERVER === 'aws'){
     console.log("TEST")
-    const options = {
+    options = {
         key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
         cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
     };
