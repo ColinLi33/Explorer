@@ -20,7 +20,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
     <h2 align = "center"> Current Features</h2>
 </p>
 
-- Hosted on web at [ColinLi.me](http://colinli.me/)
+- Hosted on web at [ColinLi.me](https://colinli.me/)
 - No longer uses Life360 (their API has shutdown, working on a permanent solution, but currently using https://github.com/aaronpk/Overland-iOS)
 - Viewable map for each member
 - Fog of war enabled to darken areas you haven't been
