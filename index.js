@@ -10,7 +10,8 @@ const app = express();
 const https = require('https');
 const fs = require('fs');
 
-if(process.env.SERVER == 'aws'){
+if(process.env.SERVER === 'aws'){
+    console.log("TEST")
     const options = {
         key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
         cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
@@ -284,7 +285,7 @@ class Logger{
 
 async function startServer() {
     try {
-        if(process.env.SERVER == 'aws'){
+        if(process.env.SERVER === 'aws'){
             https.createServer(options, app).listen(port, '0.0.0.0', () => {
                 console.log(`Server is running on AWS on port ${port}`);
             });
