@@ -5,15 +5,18 @@ const densityClustering = require('density-clustering');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const port = 443;
+let port = 80;
 const app = express();
 const https = require('https');
 const fs = require('fs');
 
-const options = {
-    key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
-};
+if(process.env.server == 'aws'){
+    const options = {
+        key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
+    };
+    port = 443;
+}
 
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
 
@@ -281,9 +284,15 @@ class Logger{
 
 async function startServer() {
     try {
-        https.createServer(options, app).listen(port, '0.0.0.0', () => {
-            console.log(`Server is running on port ${port}`);
-        });
+        if(process.env.server == 'aws'){
+            https.createServer(options, app).listen(port, '0.0.0.0', () => {
+                console.log(`Server is running on AWS on port ${port}`);
+            });
+        } else {
+            app.listen(port, '192.168.1.145', () => {
+                console.log(`Server is running on local on port ${port}`);
+            });
+        }
     } catch(error){
         console.error('Error initializing the database:', error);
     }
