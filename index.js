@@ -11,8 +11,6 @@ const https = require('https');
 const fs = require('fs');
 const logs = require('pino')(); //logger 
 const exec = require('child_process').exec;
-const getRawBody = require('raw-body');
-const crypto = require('crypto');
 let options;
 
 if(process.env.SERVER === 'aws'){
@@ -261,32 +259,28 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
 });
 
 app.post('/github-webhook', (req, res) => {
-    getRawBody(req, {
-        length: req.headers['content-length'],
-        limit: '1mb',
-        encoding: 'utf8'
-    }, (err, payload) => {
-        if (err) {
-            console.error('Error reading request body:', err);
-            return res.status(400).send('Bad Request');
-        }
-        const githubSignature = req.headers['x-hub-signature'];
-        const calculatedSignature = 'sha1=' + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(payload).digest('hex');
+    const payload = req.body;
+  
+    const signature = req.headers['x-hub-signature'];
+    const secret = process.env.GITHUB_SECRET;
+    const hmac = crypto.createHmac('sha1', secret);
+    const digest = 'sha1=' + hmac.update(JSON.stringify(payload)).digest('hex');
+  
+    if (signature !== digest) {
+        logs.error('Invalid signature');
+        return res.status(400).send('Invalid signature');
+    }
 
-        console.log('Calculated signature:', calculatedSignature);
-        console.log('GitHub signature:', githubSignature);
-
-        if (githubSignature === calculatedSignature) {
-            console.log('Received a push event from Github');
-        // Execute deployment script
-        // ...
-            return res.status(200).send('OK');
-        } else {
-            console.error('Invalid signature');
-            return res.status(401).send('Unauthorized');
+    exec('sh ./deploy.sh', (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing deploy script: ${error}`);
+          return;
         }
+        console.log(`Deploy script output: ${stdout}`);
     });
-});
+    res.status(200).send('Deploying...');
+  });
+
 
 app.get('/eds124b', (req, res) => { //ignore this its for a class
     res.render('eds');
