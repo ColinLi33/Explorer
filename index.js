@@ -32,7 +32,7 @@ app.set('view engine', 'ejs');
 app.use(cookieParser());
 app.use(handler);
 
-//github continious deployment
+//github continious deployment on ec2
 handler.on('push', (event) => {
     logs.info('Received a push event for %s to %s', event.payload.repository.name, event.payload.ref);
     exec('sh ./deploy.sh', (error, stdout, stderr) => {
