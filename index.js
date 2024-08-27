@@ -260,6 +260,7 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
 });
 
 app.post('/github-webhook', (req, res) => { //github webhook
+    console.log('Received a push event from Github');
     req.on('data', function(chunk) {
         let sig = "sha1=" + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(chunk.toString()).digest('hex')
         if (req.headers['x-hub-signature'] == sig) {

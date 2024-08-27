@@ -26,7 +26,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 - Accounts for privacy, only allow people to see your map if you want to 
 
 <p align="center">
-    <h2 align = "center"> To-Do</h2> 
+    <h2 align = "center"> To-Do</h2>
 </p>
 
 - Making my own app to track locations [(Work in progress)](https://github.com/ColinLi33/ExplorerApp)
