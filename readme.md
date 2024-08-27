@@ -16,7 +16,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 </p>
 
 
-<p align="center"> 
+<p align="center">
     <h2 align = "center"> Current Features</h2>
 </p>
 

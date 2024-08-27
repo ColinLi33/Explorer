@@ -271,6 +271,8 @@ app.post('/github-webhook', (req, res) => { //github webhook
                 }
                 logs.info(`Deploy script output: ${stdout}`);
             });
+        } else {
+            logs.error('Invalid signature');
         }
     });
     
