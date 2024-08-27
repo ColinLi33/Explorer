@@ -260,17 +260,19 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
 });
 
 app.post('/github-webhook', (req, res) => { //github webhook
-    let sig = "sha1=" + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(chunk.toString()).digest('hex')
-    if (req.headers['x-hub-signature'] == sig) {
-        logs.info('Received a push event from Github');
-        exec('sh ./deploy.sh', (error, stdout, stderr) => {
-            if (error) {
-                logs.error(`Error executing deploy script: ${error}`);
-                return;
-            }
-            logs.info(`Deploy script output: ${stdout}`);
-        });
-    }
+    req.on('data', function(chunk) {
+        let sig = "sha1=" + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(chunk.toString()).digest('hex')
+        if (req.headers['x-hub-signature'] == sig) {
+            logs.info('Received a push event from Github');
+            exec('sh ./deploy.sh', (error, stdout, stderr) => {
+                if (error) {
+                    logs.error(`Error executing deploy script: ${error}`);
+                    return;
+                }
+                logs.info(`Deploy script output: ${stdout}`);
+            });
+        }
+    });
     
     response.status(202).send('Accepted');
 });
