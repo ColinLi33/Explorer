@@ -23,7 +23,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 - Hosted on web at [ColinLi.me](https://colinli.me/)
 - Viewable map for each member
 - Fog of war enabled to darken areas you haven't been
-- Accounts for privacy, only allow people to see your map if you want to 
+- Accounts for privacy, only allow people to see your map if you want to
 
 <p align="center">
     <h2 align = "center"> To-Do</h2>
