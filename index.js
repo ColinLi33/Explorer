@@ -275,8 +275,6 @@ app.post('/github-webhook', (req, res) => { //github webhook
     } else {
         logs.error('Invalid signature');
     }
-});
-    
     res.status(202).send('Accepted');
 });
 
