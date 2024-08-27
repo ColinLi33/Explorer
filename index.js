@@ -271,13 +271,13 @@ app.post('/github-webhook', (req, res) => {
         logs.error('Invalid signature');
         return res.status(400).send('Invalid signature');
     }
-
+    logs.info('Received valid GitHub webhook');
     exec('sh ./deploy.sh', (error, stdout, stderr) => {
         if (error) {
-          console.error(`Error executing deploy script: ${error}`);
+          logs.error(`Error executing deploy script: ${error}`);
           return;
         }
-        console.log(`Deploy script output: ${stdout}`);
+        logs.info(`Deploy script output: ${stdout}`);
     });
     res.status(200).send('Deploying...');
   });
