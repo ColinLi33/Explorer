@@ -8,7 +8,7 @@
 </p>
 
 <p>
-Track you and your friends' travel experiences, uncovering your journey over time! Every place you've been will be visible but everywhere you haven't will be darkened. Below is an example.
+Track you and your friends' travel experiences, uncovering your journey over time! Every place you've been will be visible but everywhere you haven't will be darkened. Below is an example. 
 </p>
 
 <p align="center">
