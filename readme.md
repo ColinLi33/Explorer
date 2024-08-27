@@ -18,7 +18,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 
 <p align="center">
     <h2 align = "center"> Current Features</h2>
-</p>
+</p> 
 
 - Hosted on web at [ColinLi.me](https://colinli.me/)
 - Viewable map for each member
