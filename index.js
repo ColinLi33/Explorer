@@ -30,7 +30,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
-app.use(handler);
 
 //github continious deployment on ec2 test test
 handler.on('push', (event) => {
@@ -43,6 +42,10 @@ handler.on('push', (event) => {
         logs.info(`Deploy script output: ${stdout}`);
     });
 });
+
+handler.on('error', function (err) {
+    console.error('Error:', err.message)
+})
 
 const dbConfig = {
     host: 'localhost',
