@@ -259,24 +259,34 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
     }
 });
 
-app.post('/github-webhook', (req, res) => { //github webhook
-    console.log(req.headers['x-hub-signature']);
-    let sig = "sha1=" + crypto.createHmac('sha1', process.env.GITHUB_SECRET).digest('hex')
-    console.log(sig)
-    if (req.headers['x-hub-signature'] == sig) {
-        logs.info('Received a push event from Github');
-        exec('sh ./deploy.sh', (error, stdout, stderr) => {
-            if (error) {
-                logs.error(`Error executing deploy script: ${error}`);
-                return;
-            }
-            logs.info(`Deploy script output: ${stdout}`);
-        });
-    } else {
-        logs.error('Invalid signature');
-    }
-    res.status(202).send('Accepted');
-});
+app.post('/github-webhook', (req, res) => {
+    getRawBody(req, {
+      length: req.headers['content-length'],
+      limit: '1mb',
+      encoding: 'utf8'
+    }, (err, payload) => {
+      if (err) {
+        console.error('Error reading request body:', err);
+        return res.status(400).send('Bad Request');
+      }
+  
+      const githubSignature = req.headers['x-hub-signature'];
+      const calculatedSignature = 'sha1=' + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(payload).digest('hex');
+  
+      console.log('Calculated signature:', calculatedSignature);
+      console.log('GitHub signature:', githubSignature);
+  
+      if (githubSignature === calculatedSignature) {
+        console.log('Received a push event from Github');
+        // Execute deployment script
+        // ...
+        return res.status(200).send('OK');
+      } else {
+        console.error('Invalid signature');
+        return res.status(401).send('Unauthorized');
+      }
+    });
+  });
 
 app.get('/eds124b', (req, res) => { //ignore this its for a class
     res.render('eds');
