@@ -10,6 +10,9 @@ const app = express();
 const https = require('https');
 const fs = require('fs');
 const logs = require('pino')(); //logger 
+const exec = require('child_process').exec;
+const createHandler = require('github-webhook-handler');
+const handler = createHandler({ path: '/github-webhook', secret: process.env.GITHUB_SECRET });
 let options;
 
 if(process.env.SERVER === 'aws'){
@@ -27,6 +30,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
+app.use(handler);
+
+//github continious deployment
+handler.on('push', (event) => {
+    logs.info('Received a push event for %s to %s', event.payload.repository.name, event.payload.ref);
+    exec('sh ./deploy.sh', (error, stdout, stderr) => {
+        if (error) {
+            logs.error(`Error executing deploy script: ${error}`);
+            return;
+        }
+        logs.info(`Deploy script output: ${stdout}`);
+    });
+});
 
 const dbConfig = {
     host: 'localhost',
