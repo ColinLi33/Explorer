@@ -11,6 +11,7 @@ const https = require('https');
 const fs = require('fs');
 const logs = require('pino')(); //logger 
 const exec = require('child_process').exec;
+const crypto = require('crypto');
 let options;
 
 if(process.env.SERVER === 'aws'){
