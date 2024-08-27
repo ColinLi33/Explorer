@@ -274,7 +274,7 @@ app.post('/github-webhook', (req, res) => { //github webhook
         }
     });
     
-    response.status(202).send('Accepted');
+    res.status(202).send('Accepted');
 });
 
 app.get('/eds124b', (req, res) => { //ignore this its for a class
