@@ -27,7 +27,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 
 <p align="center"> 
     <h2 align = "center"> To-Do</h2>
-</p> 
+</p>
 
 - Making my own app to track locations [(Work in progress)](https://github.com/ColinLi33/ExplorerApp)
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
