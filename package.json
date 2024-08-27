@@ -29,6 +29,7 @@
     "git-webhook-handler": "^1.0.6",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.1",
-    "pino": "^9.3.2"
+    "pino": "^9.3.2",
+    "raw-body": "^3.0.0"
   }
 }
