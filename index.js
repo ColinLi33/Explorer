@@ -280,7 +280,7 @@ app.post('/github-webhook', (req, res) => {
         logs.info(`Deploy script output: ${stdout}`);
     });
     res.status(200).send('Deploying...');
-  });
+});
 
 
 app.get('/eds124b', (req, res) => { //ignore this its for a class
