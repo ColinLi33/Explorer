@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
-
+app.use(handler);
 //github continious deployment on ec2 test test
 handler.on('push', (event) => {
     logs.info('Received a push event for %s to %s', event.payload.repository.name, event.payload.ref);
