@@ -24,6 +24,7 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 - No longer uses Life360 (their API has shutdown, working on a permanent solution, but currently using https://github.com/aaronpk/Overland-iOS)
 - Viewable map for each member
 - Fog of war enabled to darken areas you haven't been
+-Accounts to improve privacy, only allow people to see your map if you want to 
 
 <p align="center">
     <h2 align = "center"> To-Do</h2>
@@ -31,5 +32,4 @@ Track you and your friends' travel experiences, uncovering your journey over tim
 
 - Make my own app to track locations [(Work in progress)](https://github.com/ColinLi33/ExplorerApp)
 - Add cool statistics like # of countries, continents explored, area in miles explored, etc...
-- Add accounts to improve privacy, only allow people to see your map if they are your friend
 - Be able to compare to other people by overlaying two maps on top of each other
