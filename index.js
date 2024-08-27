@@ -11,8 +11,7 @@ const https = require('https');
 const fs = require('fs');
 const logs = require('pino')(); //logger 
 const exec = require('child_process').exec;
-const createHandler = require('git-webhook-handler');
-const handler = createHandler({ path: '/github-webhook', secret: process.env.GITHUB_SECRET });
+let crypto = require('crypto');
 let options;
 
 if(process.env.SERVER === 'aws'){
@@ -30,22 +29,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
-app.use(handler);
-//github continious deployment on ec2 test test
-handler.on('push', (event) => {
-    logs.info('Received a push event for %s to %s', event.payload.repository.name, event.payload.ref);
-    exec('sh ./deploy.sh', (error, stdout, stderr) => {
-        if (error) {
-            logs.error(`Error executing deploy script: ${error}`);
-            return;
-        }
-        logs.info(`Deploy script output: ${stdout}`);
-    });
-});
-
-handler.on('error', function (err) {
-    console.error('Error:', err.message)
-})
 
 const dbConfig = {
     host: 'localhost',
@@ -274,6 +257,22 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
         logs.error('Error updating privacy setting:', error);
         res.status(500).json({ success: false, message: 'Error updating privacy setting' });
     }
+});
+
+app.post('/github-webhook', (req, res) => { //github webhook
+    let sig = "sha1=" + crypto.createHmac('sha1', process.env.GITHUB_SECRET).update(chunk.toString()).digest('hex')
+    if (req.headers['x-hub-signature'] == sig) {
+        logs.info('Received a push event from Github');
+        exec('sh ./deploy.sh', (error, stdout, stderr) => {
+            if (error) {
+                logs.error(`Error executing deploy script: ${error}`);
+                return;
+            }
+            logs.info(`Deploy script output: ${stdout}`);
+        });
+    }
+    
+    response.status(202).send('Accepted');
 });
 
 app.get('/eds124b', (req, res) => { //ignore this its for a class
