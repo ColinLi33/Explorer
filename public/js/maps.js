@@ -1,7 +1,7 @@
 const mapElement = document.getElementById('map');
 const pointsData = mapElement.getAttribute('data-points');
 const points = JSON.parse(pointsData);
-var map = L.map('map').setView([points[0].latitude, points[0].longitude], 14); // Default center and zoom level
+var map = L.map('map').setView([points[points.length-1].latitude, points[points.length-1].longitude], 14); // Default center and zoom level
 map.getRenderer(map).options.padding = 100;
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     noWrap: true,

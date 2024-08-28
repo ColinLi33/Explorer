@@ -107,13 +107,24 @@ app.get('/about', (req, res) => {
 
 app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to a persons map
     const username = req.params.username;
+    const token = req.query.token;
     try {
+        let isOwner = false;
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, jwtSecret);
+                if (decoded.username === username) {
+                    isOwner = true;
+                }
+            } catch (error) {
+                //invalid token, so continue as a non owner of map
+            }
+        }
         const user = await logger.db.getUserByUsername(username);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
         const isPublic = user.public; 
-        const isOwner = req.username === username;
         if(!isPublic && !isOwner){ //send them back to the shadow realm
             return res.send('<script>alert("The map you tried to access is private."); window.location.href = "/";</script>');
         }
