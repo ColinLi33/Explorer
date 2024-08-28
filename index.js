@@ -110,11 +110,17 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
     const token = req.query.token;
     try {
         let isOwner = false;
-        if (token) {
+        if (token) { //this means they pressed button in app
             try {
                 const decoded = jwt.verify(token, jwtSecret);
                 if (decoded.username === username) {
                     isOwner = true;
+                    //log them in 
+                    const accessToken = token;
+                    const refreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' });
+                    res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure });
+                    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
+                    res.json({success: true, userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
                 }
             } catch (error) {
                 //invalid token, so continue as a non owner of map
@@ -264,7 +270,6 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
         logs.info(`User ${username} updated privacy setting to ${isPublic}`);
         res.json({ success: true });
     } catch (error) {
-        console.error(error);
         logs.error('Error updating privacy setting:', error);
         res.status(500).json({ success: false, message: 'Error updating privacy setting' });
     }
