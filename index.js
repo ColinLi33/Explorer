@@ -167,7 +167,6 @@ app.post('/register', async (req, res) => { //register account
         logs.info(`User ${username} registered`);
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-        res.json({success: true, userId: userId, accessToken: accessToken, refreshToken: refreshToken });
     } catch (error) {
         console.error(error);
         if(error.code === 'ER_DUP_ENTRY') {
