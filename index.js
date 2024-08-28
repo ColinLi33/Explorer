@@ -120,7 +120,6 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
                     const refreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' });
                     res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure });
                     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-                    res.json({success: true, userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
                 }
             } catch (error) {
                 //invalid token, so continue as a non owner of map
