@@ -130,6 +130,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
             return res.status(404).json({ message: 'User not found' });
         }
         const isPublic = user.public; 
+        isOwner = req.username === username;
         if(!isPublic && !isOwner){ //send them back to the shadow realm
             return res.send('<script>alert("The map you tried to access is private."); window.location.href = "/";</script>');
         }
