@@ -297,11 +297,6 @@ app.post('/github-webhook', (req, res) => {
     res.status(200).send('Deploying...');
 });
 
-
-app.get('/eds124b', (req, res) => { //ignore this its for a class
-    res.render('eds');
-});
-
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
