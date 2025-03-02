@@ -284,19 +284,26 @@ class Logger{
 
 async function startServer() {
     try {
-        if(process.env.SERVER === 'aws'){
-            https.createServer(options, app).listen(443, '0.0.0.0', () => {
-                console.log(`Server is running on Digital Ocean on port 443`);
-            });
-        } else {
-            app.listen(3333, '192.168.1.145', () => {
-                console.log(`Server is running on local on port 3333`);
-            });
-        }
+        app.listen(3333, () => {
+            console.log(`Server is running on port 3333`);
+        });
     } catch(error){
-        console.error('Error initializing the database:', error);
+        console.error('Error initializing the server:', error);
     }
 }
+    // try {
+    //     if(process.env.SERVER === 'aws'){
+    //         https.createServer(options, app).listen(3333, '0.0.0.0', () => {
+    //             console.log(`Server is running on Digital Ocean on port 443`);
+    //         });
+    //     } else {
+    //         app.listen(3333, '192.168.1.145', () => {
+    //             console.log(`Server is running on local on port 3333`);
+    //         });
+    //     }
+    // } catch(error){
+    //     console.error('Error initializing the database:', error);
+    // }
 const logger = new Logger(dbConfig);
 startServer();
 
