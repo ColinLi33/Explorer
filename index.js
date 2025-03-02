@@ -8,19 +8,8 @@ const cookieParser = require('cookie-parser');
 let port = 80;
 const app = express();
 const https = require('https');
-const fs = require('fs');
 const logs = require('pino')(); //logger 
-const exec = require('child_process').exec;
-const crypto = require('crypto');
 let options;
-
-if(process.env.SERVER === 'aws'){
-    options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
-    };
-    port = 443;
-}
 
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
 
@@ -274,29 +263,6 @@ app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy 
     }
 });
 
-app.post('/github-webhook', (req, res) => {
-    const payload = req.body;
-  
-    const signature = req.headers['x-hub-signature'];
-    const secret = process.env.GITHUB_SECRET;
-    const hmac = crypto.createHmac('sha1', secret);
-    const digest = 'sha1=' + hmac.update(JSON.stringify(payload)).digest('hex');
-  
-    if (signature !== digest) {
-        logs.error('Invalid signature');
-        return res.status(400).send('Invalid signature');
-    }
-    logs.info('Received valid GitHub webhook');
-    exec('sh ./deploy.sh', (error, stdout, stderr) => {
-        if (error) {
-          logs.error(`Error executing deploy script: ${error}`);
-          return;
-        }
-        logs.info(`Deploy script output: ${stdout}`);
-    });
-    res.status(200).send('Deploying...');
-});
-
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
@@ -321,7 +287,7 @@ async function startServer() {
     try {
         if(process.env.SERVER === 'aws'){
             https.createServer(options, app).listen(port, '0.0.0.0', () => {
-                console.log(`Server is running on AWS on port ${port}`);
+                console.log(`Server is running on Digital Ocean on port ${port}`);
             });
         } else {
             app.listen(port, '192.168.1.145', () => {
