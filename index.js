@@ -10,13 +10,7 @@ const logs = require('pino')(); //logger
 const https = require('https');
 const fs = require('fs');
 const port = process.env.PORT || 3333;
-if(process.env.SERVER === 'cloud'){
-    const options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/cert.pem'),
-        ca: fs.readFileSync('/etc/letsencrypt/live/colinli.me/chain.pem'), // Optional
-    };
-}
+
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
 const app = express();
 app.use(express.static('public'));
@@ -292,6 +286,11 @@ class Logger{
 async function startServer() {
     try {
         if(process.env.SERVER === 'cloud'){
+            const options = {
+                key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
+                cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/cert.pem'),
+                ca: fs.readFileSync('/etc/letsencrypt/live/colinli.me/chain.pem'), // Optional
+            };
             https.createServer(options, app).listen(port, '0.0.0.0', () => {
                 console.log(`Server is running on Digital Ocean on port ${port}`);
             });
