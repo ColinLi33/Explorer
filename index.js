@@ -5,7 +5,6 @@ const densityClustering = require('density-clustering');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-let port = 80;
 const app = express();
 const https = require('https');
 const logs = require('pino')(); //logger 
@@ -286,11 +285,11 @@ class Logger{
 async function startServer() {
     try {
         if(process.env.SERVER === 'aws'){
-            https.createServer(options, app).listen(port, '0.0.0.0', () => {
+            https.createServer(options, app).listen(443, '0.0.0.0', () => {
                 console.log(`Server is running on Digital Ocean on port ${port}`);
             });
         } else {
-            app.listen(port, '192.168.1.145', () => {
+            app.listen(3333, '192.168.1.145', () => {
                 console.log(`Server is running on local on port ${port}`);
             });
         }
