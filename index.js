@@ -1,18 +1,18 @@
 const express = require('express');
+const http = require('http');
 require('dotenv').config();
 const Database = require('./db')
 const densityClustering = require('density-clustering');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const app = express();
-const https = require('https');
-const fs = require('fs');
 const logs = require('pino')(); //logger 
+const port = process.env.PORT || 3333;
 let options;
 
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
-
+const app = express();
+const server = http.createServer(app);
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -285,18 +285,26 @@ class Logger{
 
 async function startServer() {
     try {
-        const options = {
-            key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
-            cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/fullchain.pem')
-        };
-        
-        https.createServer(options, app).listen(443, () => {
-            console.log('Server running on port 3333 with HTTPS');
+        server.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
         });
-    } catch(error) {
+    } catch(error){
         console.error('Error initializing the server:', error);
     }
 }
+    // try {
+    //     if(process.env.SERVER === 'aws'){
+    //         https.createServer(options, app).listen(3333, '0.0.0.0', () => {
+    //             console.log(`Server is running on Digital Ocean on port 443`);
+    //         });
+    //     } else {
+    //         app.listen(3333, '192.168.1.145', () => {
+    //             console.log(`Server is running on local on port 3333`);
+    //         });
+    //     }
+    // } catch(error){
+    //     console.error('Error initializing the database:', error);
+    // }
 const logger = new Logger(dbConfig);
 startServer();
 
