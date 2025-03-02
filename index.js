@@ -7,12 +7,18 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const logs = require('pino')(); //logger 
+const https = require('https');
+const fs = require('fs');
 const port = process.env.PORT || 3333;
-let options;
-
+if(process.env.SERVER === 'cloud'){
+    const options = {
+        key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/cert.pem'),
+        ca: fs.readFileSync('/etc/letsencrypt/live/colinli.me/chain.pem'), // Optional
+    };
+}
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
 const app = express();
-const server = http.createServer(app);
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -285,26 +291,19 @@ class Logger{
 
 async function startServer() {
     try {
-        server.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
-        });
+        if(process.env.SERVER === 'cloud'){
+            https.createServer(options, app).listen(port, '0.0.0.0', () => {
+                console.log(`Server is running on Digital Ocean on port ${port}`);
+            });
+        } else {
+            app.listen(3333, () => {
+                console.log(`Server is running on local on port 3333`);
+            });
+        }
     } catch(error){
         console.error('Error initializing the server:', error);
     }
 }
-    // try {
-    //     if(process.env.SERVER === 'aws'){
-    //         https.createServer(options, app).listen(3333, '0.0.0.0', () => {
-    //             console.log(`Server is running on Digital Ocean on port 443`);
-    //         });
-    //     } else {
-    //         app.listen(3333, '192.168.1.145', () => {
-    //             console.log(`Server is running on local on port 3333`);
-    //         });
-    //     }
-    // } catch(error){
-    //     console.error('Error initializing the database:', error);
-    // }
 const logger = new Logger(dbConfig);
 startServer();
 
