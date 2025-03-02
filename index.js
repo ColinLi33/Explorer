@@ -286,11 +286,11 @@ async function startServer() {
     try {
         if(process.env.SERVER === 'aws'){
             https.createServer(options, app).listen(443, '0.0.0.0', () => {
-                console.log(`Server is running on Digital Ocean on port ${port}`);
+                console.log(`Server is running on Digital Ocean on port 443`);
             });
         } else {
             app.listen(3333, '192.168.1.145', () => {
-                console.log(`Server is running on local on port ${port}`);
+                console.log(`Server is running on local on port 3333`);
             });
         }
     } catch(error){
