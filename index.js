@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 const logs = require('pino')(); //logger 
 const https = require('https');
 const fs = require('fs');
-const port = process.env.PORT || 3333;
+const port = 443
 
 const isSecure = process.env.NODE_ENV === 'production'; //FOR SECURE COOKIES
 const app = express();
