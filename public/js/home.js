@@ -18,26 +18,38 @@ function populateDropdown() {
     });
 }
 
-
-if (isAuthenticated) { //if user is logged in
-    document.getElementById('logoutForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const response = await fetch('/logout', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+if (isAuthenticated) {
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        logoutForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Logout successful!');
+                    window.location.replace('/'); //refresh 
+                } else {
+                    alert(data.message || 'Logout failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Network error during logout. Please try again.');
             }
         });
-    
-        if (response.ok) {
-            alert('Logout successful!');
-            window.location.href = '/';
-        } else {
-            alert('Logout failed. Please try again.');
-        }
-    });
+    } else {
+        console.error('Logout form not found in DOM');
+    }
 }
-
 //Event listener for form submission
 document.getElementById('personIdForm').addEventListener('submit', function (event) {
     event.preventDefault(); 

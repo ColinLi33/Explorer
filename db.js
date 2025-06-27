@@ -1,4 +1,5 @@
 const mysql = require('mysql2');
+const densityClustering = require('density-clustering');
 
 class Database {
     constructor(config) { 

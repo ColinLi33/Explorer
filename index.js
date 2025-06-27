@@ -32,23 +32,32 @@ const dbConfig = {
 
 const jwtSecret = process.env.JWTSECRET;
 
-const authenticate = (req, res, next) => { //need to be logged in to access this route
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.accessToken) {
-        token = req.cookies.accessToken;
-    }
-    if (!token) {
-        return res.status(401).json({ message: 'Access denied' });
-    }
+const refreshTokenIfNeeded = (req, res, token) => {
     try {
         const decoded = jwt.verify(token, jwtSecret);
-        req.userId = decoded.userId;
-        req.username = decoded.username;
-        next(); //go next
+        const now = Date.now() / 1000;
+        
+        //if expires within a day, make a new one
+        if (decoded.exp - now < 86400) {
+            const newToken = jwt.sign(
+                { userId: decoded.userId, username: decoded.username }, 
+                jwtSecret, 
+                { expiresIn: '7d' }
+            );
+            
+            res.cookie('accessToken', newToken, { 
+                httpOnly: true, 
+                secure: isSecure,
+                sameSite: 'strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+            });
+            
+            return { userId: decoded.userId, username: decoded.username };
+        }
+        
+        return decoded;
     } catch (error) {
-        res.status(401).json({ message: 'Invalid token' });
+        return null;
     }
 };
 
@@ -59,16 +68,15 @@ const optionalAuthenticate = (req, res, next) => { //dont need to be logged in t
     } else if (req.cookies.accessToken) {
         token = req.cookies.accessToken;
     }
+    
     if (token) {
-        try {
-            const decoded = jwt.verify(token, jwtSecret);
+        const decoded = refreshTokenIfNeeded(req, res, token);
+        if (decoded) {
             req.userId = decoded.userId;
             req.username = decoded.username;
-        } catch (error) {
-            //they are not logged in
         }
     }
-    next(); //go next
+    next();
 };
 
 app.get('/', optionalAuthenticate, async (req, res) => {
@@ -84,6 +92,128 @@ app.get('/', optionalAuthenticate, async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
+});
+
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password required' });
+        }
+        
+        const user = await logger.db.getUserByUsername(username);
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        
+        const accessToken = jwt.sign(
+            { userId: user.id, username: user.username }, 
+            jwtSecret, 
+            { expiresIn: '7d' }
+        );
+        
+        const refreshToken = jwt.sign(
+            { userId: user.id, username: user.username }, 
+            jwtSecret, 
+            { expiresIn: '30d' }
+        );
+        
+        res.cookie('accessToken', accessToken, { 
+            httpOnly: true, 
+            secure: isSecure,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+        });
+        
+        res.cookie('refreshToken', refreshToken, { 
+            httpOnly: true, 
+            secure: isSecure, 
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
+        });
+        
+        res.json({ success: true, message: 'Login successful' });
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
+app.post('/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password required' });
+        }
+        
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+        
+        const existingUser = await logger.db.getUserByUsername(username);
+        if (existingUser) {
+            return res.status(409).json({ message: 'Username already exists' });
+        }
+        
+        const saltRounds = 12;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+        const userId = await logger.db.registerUser(username, hashedPassword);
+        if (!userId) {
+            return res.status(500).json({ message: 'Failed to create user' });
+        }
+        
+        const accessToken = jwt.sign(
+            { userId: userId, username: username }, 
+            jwtSecret, 
+            { expiresIn: '7d' }
+        );
+        
+        const refreshToken = jwt.sign(
+            { userId: userId, username: username }, 
+            jwtSecret, 
+            { expiresIn: '30d' }
+        );
+        
+        res.cookie('accessToken', accessToken, { 
+            httpOnly: true, 
+            secure: isSecure,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+        });
+        
+        res.cookie('refreshToken', refreshToken, { 
+            httpOnly: true, 
+            secure: isSecure, 
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
+        });
+        
+        logs.info(`New user registered: ${username}`);
+        res.json({ success: true, message: 'Registration successful' });
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
 });
 
 app.get('/login', (req, res) => {
@@ -104,11 +234,23 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
                 const decoded = jwt.verify(token, jwtSecret);
                 if (decoded.username === username) {
                     isOwner = true;
-                    //log them in 
+                    //log them in with proper cookie settings
                     const accessToken = token;
                     const refreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' });
-                    res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure });
-                    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
+                    
+                    res.cookie('accessToken', accessToken, { 
+                        httpOnly: true, 
+                        secure: isSecure,
+                        sameSite: 'strict',
+                        maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+                    });
+                    
+                    res.cookie('refreshToken', refreshToken, { 
+                        httpOnly: true, 
+                        secure: isSecure, 
+                        sameSite: 'strict',
+                        maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
+                    });
                 }
             } catch (error) {
                 //invalid token, so continue as a non owner of map
@@ -146,79 +288,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to 
     }
 });
 
-app.post('/register', async (req, res) => { //register account
-    const { username, password } = req.body;
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        userId = await logger.db.registerUser(username, hashedPassword);
-        const accessToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '1d' });
-        const refreshToken = jwt.sign({ userId: userId, username: username }, jwtSecret, { expiresIn: '30d' }); // Refresh token valid for 7 days
-        logs.info(`User ${username} registered`);
-        res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-    } catch (error) {
-        console.error(error);
-        if(error.code === 'ER_DUP_ENTRY') {
-            logs.info(`Username ${username} already exists`);
-            return res.status(400).json({success: false, message: 'Username already exists'});
-        }
-        logs.error('Error registering user:', error);
-        res.status(500).json({success: false, message: 'Error registering user'});
-    }
-});
-
-app.post('/login', async (req, res) => { //login account
-    const { username, password } = req.body;
-    try {
-        const user = await logger.db.getUserByUsername(username);
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid username or password' });
-        }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid username or password' });
-        }
-        const accessToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '1d' });
-        const refreshToken = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '30d' }); // Refresh token valid for 7 days
-        logs.info(`User ${username} logged in`);
-        res.cookie('accessToken', accessToken, { httpOnly: true, secure: isSecure});
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-        res.json({success: true, userId: user.id, accessToken: accessToken, refreshToken: refreshToken });
-    } catch (error) {
-        console.error(error);
-        logs.error('Error logging in:', error);
-        res.status(500).json({success: false, message: 'Error logging in'});
-    }
-});
-
-app.get('/logout', (req, res) => { //logout 
-    logs.info(`User ${req.username} logged out`);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-    res.sendStatus(200);
-});
-
-app.post('/refresh-token', (req, res) => { //refresh auth token given refresh token
-    const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
-    if (!refreshToken) {
-        return res.status(401).json({ message: 'Access denied' });
-    }
-    try {
-        const decoded = jwt.verify(refreshToken, jwtSecret);
-        const newAccessToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '1d' });
-        const newRefreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' }); 
-        logs.info(`User ${decoded.username} refreshed token`);
-        res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: isSecure});
-        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: isSecure, sameSite: 'strict' });
-        res.json({accessToken: newAccessToken, refreshToken: newRefreshToken});
-    } catch (error) {
-        logs.error('Error refreshing token:', error);
-        res.status(401).json({ message: 'Invalid refresh token' });
-    }
-});
-
-
-app.post('/update', authenticate, async (req, res) => { //update location data
+app.post('/update', async (req, res) => { //update location data
     const data = req.body;
     if(data == null){
         res.status(200).send({"result": "ok"});
@@ -248,19 +318,6 @@ app.post('/update', authenticate, async (req, res) => { //update location data
         }
     }
     res.status(200).send({"result": "ok"});
-});
-
-app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy setting on map
-    const { isPublic } = req.body;
-    const username = req.username;
-    try {
-        await logger.db.updateUserPrivacy(username, isPublic);
-        logs.info(`User ${username} updated privacy setting to ${isPublic}`);
-        res.json({ success: true });
-    } catch (error) {
-        logs.error('Error updating privacy setting:', error);
-        res.status(500).json({ success: false, message: 'Error updating privacy setting' });
-    }
 });
 
 class Logger{ 
@@ -305,4 +362,3 @@ async function startServer() {
 }
 const logger = new Logger(dbConfig);
 startServer();
-
