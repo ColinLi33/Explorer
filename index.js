@@ -398,6 +398,20 @@ app.get('/stats/:username', optionalAuthenticate, async (req, res) => {
     }
 });
 
+app.post('/updatePrivacy', authenticate, async (req, res) => { //update privacy setting on map
+    const { isPublic } = req.body;
+    const username = req.username;
+    try {
+        await logger.db.updateUserPrivacy(username, isPublic);
+        logs.info(`User ${username} updated privacy setting to ${isPublic}`);
+        res.json({ success: true });
+    } catch (error) {
+        logs.error('Error updating privacy setting:', error);
+        res.status(500).json({ success: false, message: 'Error updating privacy setting' });
+    }
+});
+
+
 class Logger{ 
     constructor(dbConfig){ 
         this.db = new Database(dbConfig); 
