@@ -113,6 +113,30 @@ class Database {
             await this.markClustersAsDirty(personName);
         }
     }
+
+       //batch insert multiple location points
+    async insertLocationDataBatch(locationData) {
+        if (locationData.length === 0) return;
+        
+        const placeholders = locationData.map(() => '(?, ?, ?, ?)').join(',');
+        const values = locationData.map(item => [
+            item.personName, 
+            item.latitude, 
+            item.longitude, 
+            item.timestamp
+        ]).flat();
+        
+        await this.query(
+            `INSERT INTO LocationData (person_name, latitude, longitude, timestamp) VALUES ${placeholders}`,
+            values
+        );
+        
+        const uniqueUsers = [...new Set(locationData.map(item => item.personName))];
+        for (const username of uniqueUsers) {
+            await this.markClustersAsDirty(username);
+        }
+    }
+    
     
     // Mark user clusters as needing regeneration
     async markClustersAsDirty(personName) {
@@ -243,29 +267,6 @@ class Database {
         );
         
         console.log(`Generated ${clusterInserts.length} clusters for ${username}`);
-    }
-    
-    //batch insert multiple location points
-    async insertLocationDataBatch(locationData) {
-        if (locationData.length === 0) return;
-        
-        const placeholders = locationData.map(() => '(?, ?, ?, ?)').join(',');
-        const values = locationData.map(item => [
-            item.personName, 
-            item.latitude, 
-            item.longitude, 
-            item.timestamp
-        ]).flat();
-        
-        await this.query(
-            `INSERT INTO LocationData (person_name, latitude, longitude, timestamp) VALUES ${placeholders}`,
-            values
-        );
-        
-        const uniqueUsers = [...new Set(locationData.map(item => item.personName))];
-        for (const username of uniqueUsers) {
-            await this.markClustersAsDirty(username);
-        }
     }
     
     // Get raw location data
