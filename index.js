@@ -452,6 +452,11 @@ async function startServer() {
             app.listen(3333, () => {
                 console.log(`Server is running on local on port 3333`);
             });
+
+            const users = await logger.db.getAllPersonName()
+            for(const username of users){
+                logger.db.regenerateClusters(username)
+            }
         }
     } catch(error){
         console.error('Error initializing the server:', error);
