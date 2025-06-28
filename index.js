@@ -435,7 +435,7 @@ setInterval(async () => { //recalculate clusters
     } catch (error) {
         logs.error('Background cluster regeneration error:', error);
     }
-}, 60000);
+}, 60 * 60 * 1000); //every one hour
 
 async function startServer() {
     try {
