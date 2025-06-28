@@ -27,8 +27,6 @@ const dbConfig = {
     waitForConnections: true,
     keepAliveInitialDelay: 10000,
     enableKeepAlive: true,
-    acquireTimeout: 60000,
-    timeout: 60000,
 };
 
 const jwtSecret = process.env.JWTSECRET;
