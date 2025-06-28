@@ -162,7 +162,13 @@ app.post('/login', async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
         });
         
-        res.json({ success: true, message: 'Login successful' });
+        res.json({ 
+            success: true, 
+            message: 'Login successful',
+            accessToken,
+            refreshToken,
+            userId: user.id
+        });
         
     } catch (error) {
         console.error('Login error:', error);
@@ -463,10 +469,10 @@ async function startServer() {
                 console.log(`Server is running on Digital Ocean on port ${port}`);
             });
 
-            const users = await logger.db.getAllPersonName()
-            for(const username of users){
-                logger.db.regenerateClusters(username)
-            }
+            // const users = await logger.db.getAllPersonName()
+            // for(const username of users){
+            //     logger.db.regenerateClusters(username)
+            // }
         } else {
             app.listen(3333, () => {
                 console.log(`Server is running on local on port 3333`);
