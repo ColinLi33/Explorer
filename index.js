@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 require('dotenv').config();
 const Database = require('./db')
-const densityClustering = require('density-clustering');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -24,10 +23,12 @@ const dbConfig = {
     user: process.env.DBUSER,
     password: process.env.DBPASS,
     database: process.env.DBNAME,
-    connectionLimit: 15,
+    connectionLimit: 20,
     waitForConnections: true,
     keepAliveInitialDelay: 10000,
     enableKeepAlive: true,
+    acquireTimeout: 60000,
+    timeout: 60000,
 };
 
 const jwtSecret = process.env.JWTSECRET;
@@ -59,6 +60,31 @@ const refreshTokenIfNeeded = (req, res, token) => {
     } catch (error) {
         return null;
     }
+};
+
+const authenticate = (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+    }
+    
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied' });
+    }
+    
+    const decoded = refreshTokenIfNeeded(req, res, token);
+    
+    if (!decoded) {
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+    
+    req.userId = decoded.userId;
+    req.username = decoded.username;
+    next();
 };
 
 const optionalAuthenticate = (req, res, next) => { //dont need to be logged in to access this route
@@ -224,100 +250,154 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-app.get('/map/:username', optionalAuthenticate, async (req, res) => { //goes to a persons map
+app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     const username = req.params.username;
     const token = req.query.token;
+    const detailed = req.query.detailed === 'true'; // Option for detailed view
+    
     try {
         let isOwner = false;
-        if (token) { //this means they pressed button in app
+        if (token) {
             try {
                 const decoded = jwt.verify(token, jwtSecret);
                 if (decoded.username === username) {
                     isOwner = true;
-                    //log them in with proper cookie settings
                     const accessToken = token;
-                    const refreshToken = jwt.sign({ userId: decoded.userId, username: decoded.username }, jwtSecret, { expiresIn: '30d' });
+                    const refreshToken = jwt.sign(
+                        { userId: decoded.userId, username: decoded.username }, 
+                        jwtSecret, 
+                        { expiresIn: '30d' }
+                    );
                     
                     res.cookie('accessToken', accessToken, { 
                         httpOnly: true, 
                         secure: isSecure,
                         sameSite: 'strict',
-                        maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+                        maxAge: 7 * 24 * 60 * 60 * 1000
                     });
                     
                     res.cookie('refreshToken', refreshToken, { 
                         httpOnly: true, 
                         secure: isSecure, 
                         sameSite: 'strict',
-                        maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
+                        maxAge: 30 * 24 * 60 * 60 * 1000
                     });
                 }
             } catch (error) {
-                //invalid token, so continue as a non owner of map
+                // Invalid token, continue as non-owner
             }
         }
+        
         const user = await logger.db.getUserByUsername(username);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const isPublic = user.public; 
+        
+        const isPublic = user.public;
         isOwner = req.username === username;
-        if(!isPublic && !isOwner){ //send them back to the shadow realm
+        
+        if (!isPublic && !isOwner) {
             return res.send('<script>alert("The map you tried to access is private."); window.location.href = "/";</script>');
         }
-        const points = await logger.db.getAllData(username);
-
-        const data = points.map(point => [point.latitude, point.longitude]);
-        const dbscan = new densityClustering.DBSCAN();
-        const clusters = dbscan.run(data, 0.00025, 1); // make 2nd param lower for more clusters
-
-        const representativePoints = clusters.map(cluster => {
-            const latitudes = cluster.map(index => points[index].latitude);
-            const longitudes = cluster.map(index => points[index].longitude);
-            const centroidLatitude = latitudes.reduce((a, b) => a + b) / latitudes.length;
-            const centroidLongitude = longitudes.reduce((a, b) => a + b) / longitudes.length;
-            return { latitude: centroidLatitude, longitude: centroidLongitude };
-        });
-
+        
+        let points;
+        points = await logger.db.getUserClusters(username);
+        
         const shareableLink = isPublic ? `${req.protocol}://${req.get('host')}/map/${username}` : '';
-
-        res.render('map', { pointList: representativePoints, name: username, isPublic: isPublic, isOwner: isOwner, shareableLink: shareableLink });
+        
+        const stats = await logger.db.getUserStats(username);
+        
+        res.render('map', { 
+            pointList: points, 
+            name: username, 
+            isPublic: isPublic, 
+            isOwner: isOwner, 
+            shareableLink: shareableLink,
+           // detailed: detailed,
+           // stats: stats
+        });
+        
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-app.post('/update', async (req, res) => { //update location data
+app.post('/update', async (req, res) => {
     const data = req.body;
-    if(data == null){
-        res.status(200).send({"result": "ok"});
-        return 
+    if (!data) {
+        return res.status(200).send({"result": "ok"});
     }
+    
     const username = data.username;
-    logs.info(`User ${username} updated location data`);
-    if(data.location.length > 0){
-        for (let i = 0; i < data.location.length; i++) {
-            const lat = data.location[i].coords.latitude;
-            const long = data.location[i].coords.longitude;
-            const timestamp = Math.floor(data.location[i].timestamp / 1000);
-            result = await logger.logData(username, timestamp, lat, long);
-            if(!result){
-                res.status(500).send({"result": "error"});
-                return
+    if (!username) {
+        return res.status(400).send({"result": "error", "message": "Username required"});
+    }
+    
+    logs.info(`User ${username} updating location data`);
+    
+    try {
+        const locationData = [];
+        
+        if (Array.isArray(data.location) && data.location.length > 0) {
+            //batch processing for multiple points
+            for (const location of data.location) {
+                locationData.push({
+                    personName: username,
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    timestamp: Math.floor(location.timestamp / 1000)
+                });
+            }
+            await logger.db.insertLocationDataBatch(locationData);
+            
+        } else if (data.location && data.location.coords) {
+            //single point
+            const lat = data.location.coords.latitude;
+            const long = data.location.coords.longitude;
+            const timestamp = Math.floor(data.location.timestamp / 1000);
+            
+            const result = await logger.logData(username, timestamp, lat, long);
+            if (!result) {
+                return res.status(500).send({"result": "error"});
             }
         }
-    } else {
-        const lat = data.location.coords.latitude;
-        const long = data.location.coords.longitude;
-        const timestamp = Math.floor(data.location.timestamp / 1000);
-        result = await logger.logData(username, timestamp, lat, long);
-        if(!result){
-            res.status(500).send({"result": "error"});
-            return
-        }
+        
+        res.status(200).send({"result": "ok"});
+        
+    } catch (error) {
+        console.error('Location update error:', error);
+        res.status(500).send({"result": "error"});
     }
-    res.status(200).send({"result": "ok"});
+});
+
+app.post('/regenerate-clusters', authenticate, async (req, res) => {
+    try {
+        await logger.db.regenerateClusters(req.username);
+        res.json({ success: true, message: 'Clusters regenerated' });
+    } catch (error) {
+        console.error('Cluster regeneration error:', error);
+        res.status(500).json({ message: 'Failed to regenerate clusters' });
+    }
+});
+
+app.get('/stats/:username', optionalAuthenticate, async (req, res) => {
+    const username = req.params.username;
+    const isOwner = req.username === username;
+    
+    try {
+        const user = await logger.db.getUserByUsername(username);
+        if (!user || (!user.public && !isOwner)) {
+            return res.status(404).json({ message: 'User not found or private' });
+        }
+        
+        const stats = await logger.db.getUserStats(username);
+        res.json(stats);
+        
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 class Logger{ 
@@ -339,6 +419,25 @@ class Logger{
         }
     }
 }
+
+setInterval(async () => { //recalculate clusters 
+    try {
+        const dirtyUsers = await logger.db.query(
+            'SELECT username FROM Users WHERE clusters_dirty = TRUE LIMIT 5'
+        );
+        
+        for (const user of dirtyUsers) {
+            try {
+                await logger.db.regenerateClusters(user.username);
+                logs.info(`Background cluster regeneration completed for ${user.username}`);
+            } catch (error) {
+                logs.error(`Background cluster regeneration failed for ${user.username}:`, error);
+            }
+        }
+    } catch (error) {
+        logs.error('Background cluster regeneration error:', error);
+    }
+}, 60000);
 
 async function startServer() {
     try {
