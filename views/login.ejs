@@ -1,79 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TXLLNFG34E"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-TXLLNFG34E');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login - Explorer</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        .header {
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            height: 100%;
+            background: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('/images/space2.jpg') center center / cover no-repeat;
+            z-index: 0;
+            opacity: 0.7;
+        }
+        .overlay {
+            position: relative;
+            z-index: 1;
+            background: rgba(0,0,0,0.6);
+            padding: 30px;
+            border-radius: 10px;
             text-align: center;
-            margin-bottom: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .overlay h1, .overlay h2 {
+            margin: 15px 0;
+        }
+        .overlay input, .overlay button {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+        }
+        .overlay button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        .overlay button:hover {
+            background-color: #45a049;
+        }
+        .menu {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 2;
+        }
+        .menu a {
+            color: white;
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .menu a:hover {
+            text-decoration: underline;
         }
         .logo {
             position: absolute;
             top: 10px;
-            right: 10px;
-            max-width: 50px;
-            max-height: 50px;
-            z-index: 9999;
-        }
-        .resume-container {
-            margin-top: 50px;
-            width: 100%;
-            height: 600px;
-        }
-        .resume-pdf {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .menu {
-            background-color: #f2f2f2;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        .menu ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-        }
-        .menu li {
-            display: inline;
-            margin-right: 10px;
-        }
-        .menu li a {
-            text-decoration: none;
-            color: #333;
-            padding: 5px;
+            right: 20px;
+            width: 50px;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Explorer</h1>
+    <div class="menu">
+        <a href="/">Home</a>
+        <a href="/about">About Me</a>
     </div>
     <a href="/">
         <img src="/images/logo.png" alt="Logo" class="logo">
     </a>
 
-    <div class="menu">
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About Me</a></li>
-        </ul>
-    </div>
+    <div class="overlay">
+        <h1>Explorer</h1>
 
-    <h2>Register</h2>
+        <h2>Register</h2>
         <form id="registrationForm">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
@@ -86,6 +107,7 @@
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+    </div>
 
     <script src="/js/login.js"></script>
 </body>

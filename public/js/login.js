@@ -54,7 +54,6 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
 
     const data = await response.json();
     if (data.success) {
-        alert('Login successful!');
         window.location.href = `/map/${formData.username}`; //redirect to their map page
     } else {
         alert('Login failed: ' + data.message);

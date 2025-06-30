@@ -4,9 +4,9 @@ const people = JSON.parse(peopleData);
 
 const isAuthenticated = document.body.getAttribute('data-is-authenticated') === 'true';
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
     populateDropdown();
-};
+});
 
 function populateDropdown() {
     const dropdown = document.getElementById('personIdDropdown');
@@ -36,7 +36,6 @@ if (isAuthenticated) {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('Logout successful!');
                     window.location.replace('/'); //refresh 
                 } else {
                     alert(data.message || 'Logout failed. Please try again.');

@@ -257,7 +257,6 @@ app.get('/about', (req, res) => {
 app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     const username = req.params.username;
     const token = req.query.token;
-    const detailed = req.query.detailed === 'true'; // Option for detailed view
     
     try {
         let isOwner = false;
@@ -317,7 +316,6 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
             isPublic: isPublic, 
             isOwner: isOwner, 
             shareableLink: shareableLink,
-           // detailed: detailed,
            // stats: stats
         });
         

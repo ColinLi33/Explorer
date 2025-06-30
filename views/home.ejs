@@ -1,87 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TXLLNFG34E"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-TXLLNFG34E');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Track you and your friends' travel experiences, uncovering your journey over time! Every place you've been will be visible but everywhere you haven't will be darkened">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Track you and your friends' travel experiences, uncovering your journey over time!">
     <link rel="icon" type="image/png" href="/images/logo.png">
     <title>Explorer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        .header {
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            height: 100%;
+            background: black;
+            color: white;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        .overlay {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.4);
+        }
+        h1, h2 {
+            margin: 10px;
+        }
+        button, select {
+            padding: 10px 15px;
+            margin-top: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .menu {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 2;
+        }
+        .menu a {
+            color: white;
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .menu a:hover {
+            text-decoration: underline;
         }
         .logo {
             position: absolute;
             top: 10px;
-            right: 10px;
-            max-width: 50px;
-            max-height: 50px;
-            z-index: 9999;
+            right: 20px;
+            width: 50px;
+            z-index: 2;
         }
-        .menu {
-            background-color: #f2f2f2;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        .menu ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-        }
-        .menu li {
-            display: inline;
-            margin-right: 10px;
-        }
-        .menu li a {
-            text-decoration: none;
-            color: #333;
-            padding: 5px;
-        }
+.logout-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+.logout-form button.logout-link {
+    background: none;
+    color: white;
+    border: none;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+    margin: 0 10px 0 0;
+    display: inline;
+}
+.logout-form button.logout-link:hover {
+    text-decoration: underline;
+}
     </style>
 </head>
 <body data-is-authenticated="<%= isAuthenticated %>">
-    <div class="header">
-        <h1>Explorer</h1>
+    <div class="menu">
+        <a href="/">Home</a>
+        <% if (!isAuthenticated) { %>
+            <a href="/login">Login</a>
+            <% } else { %>
+                <form id="logoutForm" class="logout-form">
+                    <button type="submit" class="logout-link">Logout</button>
+                </form>
+        <% } %>
+        <a href="/about">About Me</a>
     </div>
     <a href="/">
         <img src="/images/logo.png" alt="Logo" class="logo">
     </a>
 
-    <div class="menu">
-        <ul>
-            <li><a href="/">Home</a></li>
-            <% if (!isAuthenticated) { %>
-                <li><a href="/login">Login</a></li>
-            <% } %>
-            <li><a href="/about">About Me</a></li>
-        </ul>
+    <div class="overlay">
+        <% if (isAuthenticated) { %>
+            <h1>Welcome, <%= username %>!</h1>
+        <% } else { %>
+            <h1>Welcome to Explorer</h1>
+        <% } %>
+
+        <h2>Select a Map:</h2>
+        <form id="personIdForm">
+            <select id="personIdDropdown"></select>
+            <br>
+            <button type="submit">Go to Map</button>
+        </form>
     </div>
 
-    <% if (isAuthenticated) { %>
-        <h1>Welcome, <%= username %>!</h1>
-        <form id="logoutForm">
-            <button type="submit">Logout</button>
-        </form>
-    <% } %>
-    <h1>Select a Map:</h1>
-    <form id="personIdForm">
-        <select id="personIdDropdown">
-        </select>
-        <button type="submit">Go to Map</button>
-    </form>
-
     <div id="people" data-points="<%= JSON.stringify(peopleList) %>"></div>
-    <body data-is-authenticated="<%= isAuthenticated %>">
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const spaceTexture = new THREE.TextureLoader().load('/images/space2.jpg');
+        scene.background = spaceTexture;
+
+        const hour = new Date().getHours();
+        const isNight = hour < 6 || hour >= 20;
+        const texturePath = isNight ? '/images/earthmap_night.jpg' : '/images/earthmap.jpg';
+        const loader = new THREE.TextureLoader();
+        loader.load(texturePath, function(texture){
+            const geometry = new THREE.SphereGeometry(3, 64, 64);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture
+            });
+            const earth = new THREE.Mesh(geometry, material);
+            scene.add(earth);
+
+            camera.position.z = 5;
+
+            function animate(){
+                requestAnimationFrame(animate);
+                earth.rotation.y += 0.0005;
+                earth.rotation.x += 0.0001;
+                renderer.render(scene, camera);
+            }
+            animate();
+        });
+    </script>
     <script src="/js/home.js"></script>
 </body>
 </html>
