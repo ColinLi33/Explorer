@@ -305,11 +305,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
         }
         
         let points;
-        // points = await logger.db.getUserClusters(username);
-        points = await logger.db.getAllData(username);
-        // console.log(points)
-        // console.log(pointsTest)
-
+        points = await logger.db.getUserClusters(username);
         
         const shareableLink = isPublic ? `${req.protocol}://${req.get('host')}/map/${username}` : '';
         

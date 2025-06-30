@@ -272,14 +272,10 @@ class Database {
     // Get raw location data
     async getAllData(name) {
         const results = await this.query(
-            'SELECT latitude, longitude, timestamp FROM LocationData WHERE person_name = ?',
+            'SELECT latitude, longitude, timestamp FROM LocationData WHERE person_name = ? ORDER BY timestamp',
             [name]
         );
-        return results.map(row => ({
-            ...row,
-            latitude: parseFloat(row.latitude),
-            longitude: parseFloat(row.longitude)
-        }));
+        return results;
     }
     
     async getUserStats(username) {
