@@ -436,24 +436,24 @@ class Logger{
     }
 }
 
-setInterval(async () => { //recalculate clusters 
-    try {
-        const dirtyUsers = await logger.db.query(
-            'SELECT username FROM Users WHERE clusters_dirty = TRUE LIMIT 5'
-        );
+// setInterval(async () => { //recalculate clusters 
+//     try {
+//         const dirtyUsers = await logger.db.query(
+//             'SELECT username FROM Users WHERE clusters_dirty = TRUE LIMIT 5'
+//         );
         
-        for (const user of dirtyUsers) {
-            try {
-                await logger.db.regenerateClusters(user.username);
-                logs.info(`Background cluster regeneration completed for ${user.username}`);
-            } catch (error) {
-                logs.error(`Background cluster regeneration failed for ${user.username}:`, error);
-            }
-        }
-    } catch (error) {
-        logs.error('Background cluster regeneration error:', error);
-    }
-}, 60 * 60 * 1000); //every one hour
+//         for (const user of dirtyUsers) {
+//             try {
+//                 await logger.db.regenerateClusters(user.username);
+//                 logs.info(`Background cluster regeneration completed for ${user.username}`);
+//             } catch (error) {
+//                 logs.error(`Background cluster regeneration failed for ${user.username}:`, error);
+//             }
+//         }
+//     } catch (error) {
+//         logs.error('Background cluster regeneration error:', error);
+//     }
+// }, 60 * 60 * 1000); //every one hour
 
 async function startServer() {
     try {
