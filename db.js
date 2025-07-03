@@ -160,9 +160,9 @@ class Database {
                                !user[0].last_cluster_update ||
                                (Date.now() - new Date(user[0].last_cluster_update).getTime()) > 24 * 60 * 60 * 1000; // 24 hours
         
-        if (shouldRegenerate) {
-            await this.regenerateClusters(username);
-        }
+        // if (shouldRegenerate) {
+        //     await this.regenerateClusters(username);
+        // }
         
         // Return pre-computed clusters
         const clusters = await this.query(
