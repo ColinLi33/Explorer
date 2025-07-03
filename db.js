@@ -178,6 +178,7 @@ class Database {
     }
     
     async regenerateClusters(username) {
+        return;
         console.log(`Regenerating clusters for ${username}`);
         
         const points = await this.query(
