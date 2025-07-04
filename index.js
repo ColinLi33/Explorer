@@ -325,7 +325,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     }
 });
 
-app.post('/update', async (req, res) => {
+app.post('/update', authenticate, async (req, res) => { //TODO: need to add authenticate for this
     const data = req.body;
     if (!data) {
         return res.status(200).send({"result": "ok"});

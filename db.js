@@ -35,9 +35,7 @@ class Database {
         });
     }
     
-    // Optimized database schema
     async initialize() {
-        // Raw location data table (optimized)
         await this.query(`
             CREATE TABLE IF NOT EXISTS LocationData (
                 location_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,7 +49,6 @@ class Database {
             )
         `);
         
-        // Pre-computed clusters table for fast map loading
         await this.query(`
             CREATE TABLE IF NOT EXISTS UserClusters (
                 cluster_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -65,7 +62,6 @@ class Database {
             )
         `);
         
-        // Users table
         await this.query(`
             CREATE TABLE IF NOT EXISTS Users (
                 id INT AUTO_INCREMENT PRIMARY KEY, 
@@ -79,11 +75,9 @@ class Database {
         `);
     }
     
-    // Optimized location insertion with batch processing
     async insertLocationData(personName, latitude, longitude, timestamp) {
         const thresholdMeters = 15; // 15 meters threshold
         
-        // Check for existing nearby points using spatial query
         const existingPoint = await this.query(`
             SELECT location_id, latitude, longitude,
                    (6371000 * acos(cos(radians(?)) * cos(radians(latitude)) * 
@@ -97,19 +91,16 @@ class Database {
         `, [latitude, longitude, latitude, personName, thresholdMeters]);
         
         if (existingPoint.length > 0) {
-            // Update existing point timestamp
             await this.query(
                 'UPDATE LocationData SET timestamp = ? WHERE location_id = ?', 
                 [timestamp, existingPoint[0].location_id]
             );
         } else {
-            // Insert new point
             await this.query(
                 'INSERT INTO LocationData (person_name, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)', 
                 [personName, latitude, longitude, timestamp]
             );
-            
-            // Mark user's clusters as dirty for regeneration
+        
             await this.markClustersAsDirty(personName);
         }
     }
@@ -147,7 +138,7 @@ class Database {
     }
     
     async getUserClusters(username) {
-        // Check if clusters need regeneration
+        //check if clusters need regeneration
         const user = await this.query(
             'SELECT clusters_dirty, last_cluster_update FROM Users WHERE username = ?',
             [username]
@@ -163,7 +154,6 @@ class Database {
             await this.regenerateClusters(username);
         }
         
-        // Return pre-computed clusters
         const clusters = await this.query(
             'SELECT centroid_lat as latitude, centroid_lng as longitude, point_count FROM UserClusters WHERE person_name = ?',
             [username]
