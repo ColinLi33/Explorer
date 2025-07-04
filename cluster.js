@@ -204,7 +204,7 @@ async function clusterUserLocations(username, db) {
 async function clusterAllUsersLocations(db) {
     try {
         const users = await db.query(
-            'SELECT DISTINCT person_name FROM LocationData'
+            'SELECT username FROM Users WHERE clusters_dirty = TRUE'
         );
         
         console.log(`Starting clustering for ${users.length} users...`);

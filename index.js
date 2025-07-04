@@ -438,18 +438,8 @@ class Logger{
 
 setInterval(async () => { //recalculate clusters 
     try {
-        const dirtyUsers = await logger.db.query(
-            'SELECT username FROM Users WHERE clusters_dirty = TRUE LIMIT 5'
-        );
-        
-        for (const user of dirtyUsers) {
-            try {
-                await logger.db.regenerateClusters(user.username);
-                logs.info(`Background cluster regeneration completed for ${user.username}`);
-            } catch (error) {
-                logs.error(`Background cluster regeneration failed for ${user.username}:`, error);
-            }
-        }
+        logs.info('Regenerating all clusters');
+        await logger.db.regenerateAllClusters()
     } catch (error) {
         logs.error('Background cluster regeneration error:', error);
     }
@@ -466,20 +456,14 @@ async function startServer() {
             https.createServer(options, app).listen(port, '0.0.0.0', () => {
                 console.log(`Server is running on Digital Ocean on port ${port}`);
             });
-
-            const users = await logger.db.getAllPersonName()
-            for(const username of users){
-                logger.db.regenerateClusters(username)
-            }
+            logs.info('Regenerating all clusters');
+            await logger.db.regenerateAllClusters();
         } else {
             app.listen(3333, () => {
                 console.log(`Server is running on local on port 3333`);
             });
-
-            const users = await logger.db.getAllPersonName()
-            for(const username of users){
-                logger.db.regenerateClusters(username)
-            }
+            logs.info('Regenerating all clusters');
+            await logger.db.regenerateAllClusters();
         }
     } catch(error){
         console.error('Error initializing the server:', error);

@@ -146,7 +146,6 @@ class Database {
         );
     }
     
-    // Get pre-computed clusters (fast!)
     async getUserClusters(username) {
         // Check if clusters need regeneration
         const user = await this.query(
@@ -178,7 +177,11 @@ class Database {
     }
     
     async regenerateClusters(username) {
-        await cluster.clusterUserLocations(username, this)
+        await cluster.clusterUserLocations(username, this);
+    }
+
+    async regenerateAllClusters(){
+        await cluster.clusterAllUsersLocations(this);
     }
     
     // Get raw location data
