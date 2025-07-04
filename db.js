@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-const densityClustering = require('density-clustering');
+const cluster = require('./cluster')
 
 class Database {
     constructor(config) { 
@@ -178,96 +178,7 @@ class Database {
     }
     
     async regenerateClusters(username) {
-        return;
-        console.log(`Regenerating clusters for ${username}`);
-        
-        const points = await this.query(
-            'SELECT latitude, longitude FROM LocationData WHERE person_name = ? ORDER BY timestamp',
-            [username]
-        );
-        
-        if (points.length === 0) return;
-        
-        await this.query('DELETE FROM UserClusters WHERE person_name = ?', [username]);
-        
-        const data = points
-            .filter(point => 
-                point.latitude != null && 
-                point.longitude != null && 
-                !isNaN(point.latitude) && 
-                !isNaN(point.longitude) &&
-                isFinite(point.latitude) && 
-                isFinite(point.longitude)
-            )
-            .map(point => [point.latitude, point.longitude]);
-
-        if (data.length === 0) {
-            console.log('No valid points to cluster');
-            return;
-        }
-
-        const dbscan = new densityClustering.DBSCAN();
-        const clusters = dbscan.run(data, 0.00025, 1);
-        
-        const clusterInserts = [];
-
-        for (const cluster of clusters) {
-            if (cluster.length === 0) continue; 
-            const latitudes = cluster.map(index => points[index].latitude);
-            const longitudes = cluster.map(index => points[index].longitude);
-            if (latitudes.length === 0 || longitudes.length === 0) {
-                console.log('Skipping cluster with invalid coordinates');
-                continue;
-            }
-
-            function safeCentroid(values) { //This function calculates average of the array values while also making sure to not error out
-                if (!Array.isArray(values) || values.length === 0) {
-                    return NaN;
-                }
-                
-                const sum = values.reduce((acc, val) => {
-                    const numAcc = Number(acc);
-                    const numVal = Number(val);
-                    
-                    if (isNaN(numAcc) || isNaN(numVal)) {
-                        console.log('Type conversion failed:', acc, val);
-                        return NaN;
-                    }
-                    
-                    return numAcc + numVal;
-                }, 0);
-                
-                return sum / values.length;
-            }
-            const centroidLat = safeCentroid(latitudes);
-            const centroidLng = safeCentroid(longitudes);
-            clusterInserts.push([username, centroidLat, centroidLng, cluster.length]);
-        }
-
-        const clusteredIndices = new Set(clusters.flat());
-        for (let i = 0; i < points.length; i++) {
-            if (!clusteredIndices.has(i)) {
-                clusterInserts.push([username, points[i].latitude, points[i].longitude, 1]);
-            }
-        }
-        
-        //batch insert clusters
-        if (clusterInserts.length > 0) {
-            const placeholders = clusterInserts.map(() => '(?, ?, ?, ?)').join(',');
-            const values = clusterInserts.flat();
-            
-            await this.query(
-                `INSERT INTO UserClusters (person_name, centroid_lat, centroid_lng, point_count) VALUES ${placeholders}`,
-                values
-            );
-        }
-        
-        await this.query(
-            'UPDATE Users SET clusters_dirty = FALSE, last_cluster_update = NOW() WHERE username = ?',
-            [username]
-        );
-        
-        console.log(`Generated ${clusterInserts.length} clusters for ${username}`);
+        await cluster.clusterUserLocations(username, this)
     }
     
     // Get raw location data
