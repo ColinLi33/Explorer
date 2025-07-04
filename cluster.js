@@ -181,7 +181,6 @@ async function clusterUserLocations(username, db) {
         }
         
         console.log(`Found ${clusters.length} clusters for user: ${username}`);
-        console.log(clusters)
         
         await db.query(
             'DELETE FROM UserClusters WHERE person_name = ?',
