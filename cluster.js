@@ -157,7 +157,7 @@ class Cluster {
 async function clusterUserLocations(username, db) {
     try {
         const strPoints = await db.query(
-            'SELECT latitude, longitude FROM LocationData WHERE person_name = ? ORDER BY timestamp',
+            'SELECT latitude, longitude FROM LocationData WHERE username = ? ORDER BY timestamp',
             [username]
         );
 
@@ -183,13 +183,13 @@ async function clusterUserLocations(username, db) {
         console.log(`Found ${clusters.length} clusters for user: ${username}`);
         
         await db.query(
-            'DELETE FROM UserClusters WHERE person_name = ?',
+            'DELETE FROM UserClusters WHERE username = ?',
             [username]
         );
         
         for (const cluster of clusters) {
             await db.query(
-                'INSERT INTO UserClusters (person_name, centroid_lat, centroid_lng, point_count) VALUES (?, ?, ?, ?)',
+                'INSERT INTO UserClusters (username, centroid_lat, centroid_lng, point_count) VALUES (?, ?, ?, ?)',
                 [username, cluster.latitude, cluster.longitude, cluster.pointCount]
             );
         }
@@ -210,7 +210,7 @@ async function clusterAllUsersLocations(db) {
         console.log(`Starting clustering for ${users.length} users...`);
         
         for (const user of users) {
-            await clusterUserLocations.call(user.person_name, db);
+            await clusterUserLocations.call(user.username, db);
         }
         
         console.log('Clustering completed for all users');

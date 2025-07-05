@@ -39,11 +39,11 @@ class Database {
         await this.query(`
             CREATE TABLE IF NOT EXISTS LocationData (
                 location_id INT AUTO_INCREMENT PRIMARY KEY,
-                person_name VARCHAR(255),
+                username VARCHAR(255),
                 latitude DECIMAL(10, 8) NOT NULL,
                 longitude DECIMAL(11, 8) NOT NULL,
                 timestamp INT,
-                INDEX personNameIndex (person_name),
+                INDEX usernameIndex (username),
                 INDEX timestampIndex (timestamp),
                 SPATIAL INDEX spatialIndex (location) /*!80003 INVISIBLE */
             )
@@ -52,12 +52,12 @@ class Database {
         await this.query(`
             CREATE TABLE IF NOT EXISTS UserClusters (
                 cluster_id INT AUTO_INCREMENT PRIMARY KEY,
-                person_name VARCHAR(255),
+                username VARCHAR(255),
                 centroid_lat DECIMAL(10, 8) NOT NULL,
                 centroid_lng DECIMAL(11, 8) NOT NULL,
                 point_count INT DEFAULT 1,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX personNameIndex (person_name),
+                INDEX usernameIndex (username),
                 INDEX lastUpdatedIndex (last_updated)
             )
         `);
@@ -75,7 +75,7 @@ class Database {
         `);
     }
     
-    async insertLocationData(personName, latitude, longitude, timestamp) {
+    async insertLocationData(username, latitude, longitude, timestamp) {
         const thresholdMeters = 15; // 15 meters threshold
         
         const existingPoint = await this.query(`
@@ -84,11 +84,11 @@ class Database {
                    cos(radians(longitude) - radians(?)) + sin(radians(?)) * 
                    sin(radians(latitude)))) AS distance
             FROM LocationData 
-            WHERE person_name = ? 
+            WHERE username = ? 
             HAVING distance < ?
             ORDER BY distance 
             LIMIT 1
-        `, [latitude, longitude, latitude, personName, thresholdMeters]);
+        `, [latitude, longitude, latitude, username, thresholdMeters]);
         
         if (existingPoint.length > 0) {
             await this.query(
@@ -97,11 +97,11 @@ class Database {
             );
         } else {
             await this.query(
-                'INSERT INTO LocationData (person_name, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)', 
-                [personName, latitude, longitude, timestamp]
+                'INSERT INTO LocationData (username, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)', 
+                [username, latitude, longitude, timestamp]
             );
         
-            await this.markClustersAsDirty(personName);
+            await this.markClustersAsDirty(username);
         }
     }
 
@@ -111,18 +111,18 @@ class Database {
         
         const placeholders = locationData.map(() => '(?, ?, ?, ?)').join(',');
         const values = locationData.map(item => [
-            item.personName, 
+            item.username, 
             item.latitude, 
             item.longitude, 
             item.timestamp
         ]).flat();
         
         await this.query(
-            `INSERT INTO LocationData (person_name, latitude, longitude, timestamp) VALUES ${placeholders}`,
+            `INSERT INTO LocationData (username, latitude, longitude, timestamp) VALUES ${placeholders}`,
             values
         );
         
-        const uniqueUsers = [...new Set(locationData.map(item => item.personName))];
+        const uniqueUsers = [...new Set(locationData.map(item => item.username))];
         for (const username of uniqueUsers) {
             await this.markClustersAsDirty(username);
         }
@@ -130,10 +130,10 @@ class Database {
     
     
     // Mark user clusters as needing regeneration
-    async markClustersAsDirty(personName) {
+    async markClustersAsDirty(username) {
         await this.query(
             'UPDATE Users SET clusters_dirty = TRUE WHERE username = ?',
-            [personName]
+            [username]
         );
     }
     
@@ -155,7 +155,7 @@ class Database {
         }
         
         const clusters = await this.query(
-            'SELECT centroid_lat as latitude, centroid_lng as longitude, point_count FROM UserClusters WHERE person_name = ?',
+            'SELECT centroid_lat as latitude, centroid_lng as longitude, point_count FROM UserClusters WHERE username = ?',
             [username]
         );
         
@@ -177,7 +177,7 @@ class Database {
     // Get raw location data
     async getAllData(name) {
         const results = await this.query(
-            'SELECT latitude, longitude, timestamp FROM LocationData WHERE person_name = ? ORDER BY timestamp',
+            'SELECT latitude, longitude, timestamp FROM LocationData WHERE username = ? ORDER BY timestamp',
             [name]
         );
         return results;
@@ -191,7 +191,7 @@ class Database {
                 MAX(timestamp) as last_point,
                 COUNT(DISTINCT DATE(FROM_UNIXTIME(timestamp))) as active_days
             FROM LocationData 
-            WHERE person_name = ?
+            WHERE username = ?
         `, [username]);
         
         return stats[0] || {};
@@ -220,9 +220,9 @@ class Database {
         );
     }
     
-    async getAllPersonName() {
-        const results = await this.query('SELECT DISTINCT person_name FROM LocationData');
-        return results.map(item => item.person_name);
+    async getAllusername() {
+        const results = await this.query('SELECT DISTINCT username FROM LocationData');
+        return results.map(item => item.username);
     }
 }
 
