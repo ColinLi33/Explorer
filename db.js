@@ -128,8 +128,6 @@ class Database {
         }
     }
     
-    
-    // Mark user clusters as needing regeneration
     async markClustersAsDirty(username) {
         await this.query(
             'UPDATE Users SET clusters_dirty = TRUE WHERE username = ?',

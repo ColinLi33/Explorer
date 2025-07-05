@@ -194,6 +194,12 @@ async function clusterUserLocations(username, db) {
                 [username, cluster.latitude, cluster.longitude, cluster.pointCount]
             );
         }
+
+        await db.query(
+            'UPDATE Users SET clusters_dirty = FALSE, last_cluster_update = CURRENT_TIMESTAMP() WHERE username = ?',
+            [username]
+        );
+
         
         console.log(`Successfully inserted ${clusters.length} clusters for user: ${username}`);
     } catch (error) {
