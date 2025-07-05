@@ -156,6 +156,7 @@ class Cluster {
 
 async function clusterUserLocations(username, db) {
     try {
+        console.log(`Clustering: ${username}`)
         const strPoints = await db.query(
             'SELECT latitude, longitude FROM LocationData WHERE username = ? ORDER BY timestamp',
             [username]
@@ -201,28 +202,7 @@ async function clusterUserLocations(username, db) {
     }
 }
 
-async function clusterAllUsersLocations(db) {
-    try {
-        const users = await db.query(
-            'SELECT username FROM Users WHERE clusters_dirty = TRUE'
-        );
-        
-        console.log(`Starting clustering for ${users.length} users...`);
-        
-        for (const user of users) {
-            await clusterUserLocations.call(user.username, db);
-        }
-        
-        console.log('Clustering completed for all users');
-        
-    } catch (error) {
-        console.error('Error clustering all users locations:', error);
-        throw error;
-    }
-}
-
 module.exports = {
     Cluster,
-    clusterUserLocations,
-    clusterAllUsersLocations
+    clusterUserLocations
 };

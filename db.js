@@ -171,7 +171,12 @@ class Database {
     }
 
     async regenerateAllClusters(){
-        await cluster.clusterAllUsersLocations(this);
+        const users = await this.query(
+            'SELECT DISTINCT username FROM Users'
+        )
+        for(const user of users){
+            await cluster.clusterUserLocations(user.username, this);
+        }
     }
     
     // Get raw location data
