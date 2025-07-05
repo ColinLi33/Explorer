@@ -170,7 +170,7 @@ class Database {
 
     async regenerateAllClusters(){
         const users = await this.query(
-            'SELECT DISTINCT username FROM Users WHERE clusters_dirty = FALSE'
+            'SELECT DISTINCT username FROM Users WHERE clusters_dirty = TRUE'
         )
         for(const user of users){
             await cluster.clusterUserLocations(user.username, this);
