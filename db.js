@@ -144,9 +144,8 @@ class Database {
         
         if (user.length === 0) return [];
         
-        const shouldRegenerate = user[0].clusters_dirty || 
-                               !user[0].last_cluster_update ||
-                               (Date.now() - new Date(user[0].last_cluster_update).getTime()) > 24 * 60 * 60 * 1000; // 24 hours
+        const shouldRegenerate = user[0].clusters_dirty || !user[0].last_cluster_update 
+        // || (Date.now() - new Date(user[0].last_cluster_update).getTime()) > 24 * 60 * 60 * 1000; // 24 hours
         
         if (shouldRegenerate) {
             await this.regenerateClusters(username);
