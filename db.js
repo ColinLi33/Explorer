@@ -77,8 +77,8 @@ class Database {
     
     async insertLocationData(username, latitude, longitude, timestamp) {
         const thresholdMeters = 15; // 15 meters threshold
-        
-        const existingPoint = await this.query(`
+        //LOOK AT THIS
+        const existingPoint = await this.query(` 
             SELECT location_id, latitude, longitude,
                    (6371000 * acos(cos(radians(?)) * cos(radians(latitude)) * 
                    cos(radians(longitude) - radians(?)) + sin(radians(?)) * 

@@ -26,7 +26,7 @@ if (isAuthenticated) {
             
             try {
                 const response = await fetch('/logout', {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
                     },
