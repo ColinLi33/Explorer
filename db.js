@@ -91,7 +91,7 @@ class Database {
         `, [latitude, longitude, latitude, username, thresholdMeters]);
         
         if (existingPoint.length > 0) {
-            Console.log(`Location for user ${username} is within threshold, not inserting.`);
+            console.log(`Location for user ${username} is within threshold, not inserting.`);
             return;
         } else {
             await this.query(
