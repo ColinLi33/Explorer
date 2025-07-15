@@ -424,7 +424,7 @@ class Logger{
     async logData(username, timestamp, lat, long){
         try {
             await this.db.insertLocationData(username, lat, long, timestamp);
-            logs.info(`Location data inserted for ${username} at ${lat}, ${long}`);
+            // logs.info(`Location data inserted for ${username} at ${lat}, ${long}`);
             return true;
         } catch(error){
             console.error('Error inserting location data:', error);
