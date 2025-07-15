@@ -77,7 +77,7 @@ class Database {
     
     async insertLocationData(username, latitude, longitude, timestamp) {
         const thresholdMeters = 15; // 15 meters threshold
-        //LOOK AT THIS
+        //TODO LOOK AT THIS
         const existingPoint = await this.query(` 
             SELECT location_id, latitude, longitude,
                    (6371000 * acos(cos(radians(?)) * cos(radians(latitude)) * 
@@ -91,22 +91,19 @@ class Database {
         `, [latitude, longitude, latitude, username, thresholdMeters]);
         
         if (existingPoint.length > 0) {
-            await this.query(
-                'UPDATE LocationData SET timestamp = ? WHERE location_id = ?', 
-                [timestamp, existingPoint[0].location_id]
-            );
+            return;
         } else {
             await this.query(
                 'INSERT INTO LocationData (username, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)', 
                 [username, latitude, longitude, timestamp]
             );
-        
+            console.log(`Inserted new location for user: ${username} at (${latitude}, ${longitude})`);
             await this.markClustersAsDirty(username);
         }
     }
 
        //batch insert multiple location points
-    async insertLocationDataBatch(locationData) {
+    async insertLocationDataBatch(locationData) { //TODO: LOOK AT THIS
         if (locationData.length === 0) return;
         
         const placeholders = locationData.map(() => '(?, ?, ?, ?)').join(',');

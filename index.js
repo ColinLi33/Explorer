@@ -335,9 +335,7 @@ app.post('/update', authenticate, async (req, res) => { //TODO: need to add auth
     if (!username) {
         return res.status(400).send({"result": "error", "message": "Username required"});
     }
-    
-    logs.info(`User ${username} updating location data`);
-    
+        
     try {
         const locationData = [];
         
