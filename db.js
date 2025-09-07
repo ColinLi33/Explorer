@@ -91,6 +91,7 @@ class Database {
         `, [latitude, longitude, latitude, username, thresholdMeters]);
         
         if (existingPoint.length > 0) {
+            console.log(`Skipped inserting duplicate location for user: ${username} at (${latitude}, ${longitude})`);
             return;
         } else {
             await this.query(
@@ -98,29 +99,6 @@ class Database {
                 [username, latitude, longitude, timestamp]
             );
             console.log(`Inserted new location for user: ${username} at (${latitude}, ${longitude})`);
-            await this.markClustersAsDirty(username);
-        }
-    }
-
-       //batch insert multiple location points
-    async insertLocationDataBatch(locationData) { //TODO: LOOK AT THIS
-        if (locationData.length === 0) return;
-        
-        const placeholders = locationData.map(() => '(?, ?, ?, ?)').join(',');
-        const values = locationData.map(item => [
-            item.username, 
-            item.latitude, 
-            item.longitude, 
-            item.timestamp
-        ]).flat();
-        
-        await this.query(
-            `INSERT INTO LocationData (username, latitude, longitude, timestamp) VALUES ${placeholders}`,
-            values
-        );
-        
-        const uniqueUsers = [...new Set(locationData.map(item => item.username))];
-        for (const username of uniqueUsers) {
             await this.markClustersAsDirty(username);
         }
     }

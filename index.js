@@ -325,7 +325,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
     }
 });
 
-app.post('/update', authenticate, async (req, res) => { //TODO: need to add authenticate for this
+app.post('/update', authenticate, async (req, res) => {
     const data = req.body;
     if (!data) {
         return res.status(200).send({"result": "ok"});
@@ -342,14 +342,15 @@ app.post('/update', authenticate, async (req, res) => { //TODO: need to add auth
         if (Array.isArray(data.location) && data.location.length > 0) {
             //batch processing for multiple points
             for (const location of data.location) {
-                locationData.push({
-                    personName: username,
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    timestamp: Math.floor(location.timestamp / 1000)
-                });
+                const lat = location.coords.latitude;
+                const long = location.coords.longitude;
+                const timestamp = Math.floor(location.timestamp / 1000);
+                
+                const result = await logger.logData(username, timestamp, lat, long);
+                if (!result) {
+                    return res.status(500).send({"result": "error"});
+                }
             }
-            await logger.db.insertLocationDataBatch(locationData);
             
         } else if (data.location && data.location.coords) {
             //single point
