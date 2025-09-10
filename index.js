@@ -190,7 +190,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Username and password required' });
         }
         
-        if (!password.startsWith('$argon2') || password.length < 50) {
+        if (password.length !== 64 || !/^[a-f0-9]+$/i.test(password)) {
             return res.status(400).json({ message: 'Invalid password format' });
         }
         

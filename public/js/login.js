@@ -16,16 +16,13 @@ function clearFormFields() {
 async function hashPassword(password) {
     const salt = 'imsupersalty123'; 
     try {
-        const result = await argon2.hash({
-            pass: password,
-            salt: salt,
-            time: 2,
-            mem: 1024,
-            hashLen: 32,
-            parallelism: 1,
-            type: argon2.ArgonType.Argon2id
-        });
-        return result.encoded;
+        const passwordWithSalt = password + salt;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(passwordWithSalt);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
     } catch (error) {
         console.error('Hashing failed:', error);
         throw new Error('Password hashing failed');
