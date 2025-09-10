@@ -190,8 +190,8 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Username and password required' });
         }
         
-        if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        if (password.length !== 64) { //prehashed password should be 64 chars
+            return res.status(400).json({ message: 'Invalid password format' });
         }
         
         const existingUser = await logger.db.getUserByUsername(username);
@@ -336,9 +336,7 @@ app.post('/update', authenticate, async (req, res) => {
         return res.status(400).send({"result": "error", "message": "Username required"});
     }
         
-    try {
-        const locationData = [];
-        
+    try {        
         if (Array.isArray(data.location) && data.location.length > 0) {
             //batch processing for multiple points
             for (const location of data.location) {
@@ -372,9 +370,10 @@ app.post('/update', authenticate, async (req, res) => {
     }
 });
 
-app.post('/regenerate-clusters', authenticate, async (req, res) => {
+app.get('/regenerate-clusters', authenticate, async (req, res) => {
     try {
-        await logger.db.regenerateClusters(req.username);
+        const username = req.username;
+        await logger.db.regenerateClusters(username);
         res.json({ success: true, message: 'Clusters regenerated' });
     } catch (error) {
         console.error('Cluster regeneration error:', error);
