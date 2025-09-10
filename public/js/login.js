@@ -13,9 +13,23 @@ function clearFormFields() {
     }
 }
 
-function hashPassword(password) {
+async function hashPassword(password) {
     const salt = 'imsupersalty123'; 
-    return CryptoJS.SHA256(password + salt).toString();
+    try {
+        const result = await argon2.hash({
+            pass: password,
+            salt: salt,
+            time: 2,
+            mem: 1024,
+            hashLen: 32,
+            parallelism: 1,
+            type: argon2.ArgonType.Argon2id
+        });
+        return result.encoded;
+    } catch (error) {
+        console.error('Hashing failed:', error);
+        throw new Error('Password hashing failed');
+    }
 }
 
 document.getElementById('registrationForm').addEventListener('submit', async (event) => {
@@ -23,28 +37,33 @@ document.getElementById('registrationForm').addEventListener('submit', async (ev
     const username = document.querySelector('#registrationForm input[name="username"]').value;
     const password = document.querySelector('#registrationForm input[name="password"]').value;
     
-    const hashedPassword = hashPassword(password);
-    
-    const formData = {
-        username: username,
-        password: hashedPassword
-    };
-    const response = await fetch('/register', {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify(formData)
-    });
+    try {
+        const hashedPassword = await hashPassword(password);
+        
+        const formData = {
+            username: username,
+            password: hashedPassword
+        };
+        const response = await fetch('/register', {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify(formData)
+        });
 
-    const data = await response.json();
-    if (data.success) {
-        alert('Registration successful!');
-        document.querySelector('#registrationForm input[name="username"]').value = '';
-        document.querySelector('#registrationForm input[name="password"]').value = '';
-        window.location.href = `/map/${username}`;
-    } else {
-        alert('Registration failed: ' + data.message);
+        const data = await response.json();
+        if (data.success) {
+            alert('Registration successful!');
+            document.querySelector('#registrationForm input[name="username"]').value = '';
+            document.querySelector('#registrationForm input[name="password"]').value = '';
+            window.location.href = `/map/${username}`;
+        } else {
+            alert('Registration failed: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        alert('Registration failed: ' + error.message);
     }
 });
 
@@ -53,24 +72,29 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
     const username = document.querySelector('#loginForm input[name="username"]').value;
     const password = document.querySelector('#loginForm input[name="password"]').value;
     
-    const hashedPassword = hashPassword(password);
-    
-    const formData = {
-        username: username,
-        password: hashedPassword
-    };
-    const response = await fetch('/login', {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify(formData)
-    });
+    try {
+        const hashedPassword = await hashPassword(password);
+        
+        const formData = {
+            username: username,
+            password: hashedPassword
+        };
+        const response = await fetch('/login', {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify(formData)
+        });
 
-    const data = await response.json();
-    if (data.success) {
-        window.location.href = `/map/${username}`; //redirect to their map page
-    } else {
-        alert('Login failed: ' + data.message);
+        const data = await response.json();
+        if (data.success) {
+            window.location.href = `/map/${username}`; //redirect to their map page
+        } else {
+            alert('Login failed: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
     }
 });
