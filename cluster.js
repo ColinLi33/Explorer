@@ -188,12 +188,14 @@ async function clusterUserLocations(username, db) {
             [username]
         );
         
-        for (const cluster of clusters) {
-            await db.query(
-                'INSERT INTO UserClusters (username, centroid_lat, centroid_lng, point_count) VALUES (?, ?, ?, ?)',
-                [username, cluster.latitude, cluster.longitude, cluster.pointCount]
-            );
-        }
+        const clusterValues = clusters.map(cluster => [
+            username, cluster.latitude, cluster.longitude, cluster.pointCount
+        ]);
+
+        await db.query(
+            'INSERT INTO UserClusters (username, centroid_lat, centroid_lng, point_count) VALUES ?',
+            [clusterValues]
+        );
 
         await db.query(
             'UPDATE Users SET clusters_dirty = FALSE, last_cluster_update = CURRENT_TIMESTAMP() WHERE username = ?',
