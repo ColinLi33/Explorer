@@ -77,7 +77,6 @@ class Database {
     
     async insertLocationData(username, latitude, longitude, timestamp) {
         const thresholdMeters = 15; // 15 meters threshold
-        //TODO LOOK AT THIS
         const existingPoint = await this.query(` 
             SELECT location_id, latitude, longitude,
                    (6371000 * acos(cos(radians(?)) * cos(radians(latitude)) * 
@@ -139,7 +138,9 @@ class Database {
     }
     
     async regenerateClusters(username) {
+        const currTime = new Date();
         await cluster.clusterUserLocations(username, this);
+        console.log('`Took time: ' + (new Date() - currTime) + 'ms`');
     }
 
     async regenerateAllClusters(){
