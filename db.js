@@ -140,7 +140,7 @@ class Database {
     async regenerateClusters(username) {
         const currTime = new Date();
         await cluster.clusterUserLocations(username, this);
-        console.log('`Took time: ' + (new Date() - currTime) + 'ms`');
+        console.log(`Clustering took: ${(new Date() - currTime)}ms`);
     }
 
     async regenerateAllClusters(){

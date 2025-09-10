@@ -182,6 +182,54 @@ app.get('/logout', (req, res) => {
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
+app.post('/refresh-token', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        
+        if (!refreshToken) {
+            return res.status(400).json({ message: 'Refresh token required' });
+        }
+        
+        const decoded = jwt.verify(refreshToken, jwtSecret);
+        
+        const newAccessToken = jwt.sign(
+            { userId: decoded.userId, username: decoded.username }, 
+            jwtSecret, 
+            { expiresIn: '7d' }
+        );
+        
+        const newRefreshToken = jwt.sign(
+            { userId: decoded.userId, username: decoded.username }, 
+            jwtSecret, 
+            { expiresIn: '30d' }
+        );
+        
+        res.cookie('accessToken', newAccessToken, { 
+            httpOnly: true, 
+            secure: isSecure,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+        });
+        
+        res.cookie('refreshToken', newRefreshToken, { 
+            httpOnly: true, 
+            secure: isSecure, 
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 //30 days
+        });
+        
+        res.json({ 
+            success: true,
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
+        
+    } catch (error) {
+        console.error('Token refresh error:', error);
+        res.status(401).json({ message: 'Invalid or expired refresh token' });
+    }
+});
+
 app.post('/register', async (req, res) => {
     try {
         const { username, password } = req.body;
