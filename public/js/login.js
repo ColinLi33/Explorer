@@ -13,16 +13,12 @@ function clearFormFields() {
     }
 }
 
-async function hashPassword(password) {
+function hashPassword(password) {
     const salt = 'imsupersalty123'; 
     try {
         const passwordWithSalt = password + salt;
-        const encoder = new TextEncoder();
-        const data = encoder.encode(passwordWithSalt);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
+        const hash = CryptoJS.SHA256(passwordWithSalt).toString();
+        return hash;
     } catch (error) {
         console.error('Hashing failed:', error);
         throw new Error('Password hashing failed');
@@ -35,7 +31,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (ev
     const password = document.querySelector('#registrationForm input[name="password"]').value;
     
     try {
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = hashPassword(password);
         
         const formData = {
             username: username,
@@ -70,7 +66,7 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
     const password = document.querySelector('#loginForm input[name="password"]').value;
     
     try {
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = hashPassword(password);
         
         const formData = {
             username: username,
