@@ -172,7 +172,7 @@ async function clusterUserLocations(username, db) {
             return;
         }
         
-        const clusterer = new Cluster(0.03, 1); // 30m radius, min 1 point
+        const clusterer = new Cluster(0.02, 1); // 30m radius, min 1 point
         
         const clusters = clusterer.clusterPoints(points);
         
