@@ -493,25 +493,21 @@ setInterval(async () => { //recalculate clusters
 
 async function startServer() {
     try {
-        if(process.env.SERVER === 'cloud'){
-            const options = {
-                key: fs.readFileSync('/etc/letsencrypt/live/colinli.me/privkey.pem'),
-                cert: fs.readFileSync('/etc/letsencrypt/live/colinli.me/cert.pem'),
-                ca: fs.readFileSync('/etc/letsencrypt/live/colinli.me/chain.pem'), // Optional
-            };
-            https.createServer(options, app).listen(port, '0.0.0.0', () => {
-                console.log(`Server is running on Digital Ocean on port ${port}`);
+        if (process.env.SERVER === 'cloud') {
+            const port = 3333; 
+            app.listen(port, '127.0.0.1', () => {
+                console.log(`Server is running behind nginx on port ${port}`);
             });
             logs.info('Regenerating all clusters');
             await logger.db.regenerateAllClusters();
         } else {
             app.listen(3333, () => {
-                console.log(`Server is running on local on port 3333`);
+                console.log(`Server is running locally on port 3333`);
             });
             logs.info('Regenerating all clusters');
             await logger.db.regenerateAllClusters();
         }
-    } catch(error){
+    } catch (error) {
         console.error('Error initializing the server:', error);
     }
 }
