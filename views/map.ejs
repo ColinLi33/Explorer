@@ -66,7 +66,6 @@
             border-radius: 3px;
         }
     </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
     <a href="/">
@@ -86,10 +85,11 @@
         </div>
     <% } %>
     <div id="map" data-points="<%= JSON.stringify(pointList) %>"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.135/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://unpkg.com/turf/turf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simplify-js@1.2.4/simplify.min.js"></script>
-    <script src="/js/maps.js"></script>
+    <script type='module' src="/js/maps.js"></script>
     <script>
         function toggleDropdown() {
             var dropdown = document.getElementById("settingsDropdown");
