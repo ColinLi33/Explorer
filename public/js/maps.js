@@ -1,7 +1,7 @@
 const mapElement = document.getElementById('map');
 const pointsData = mapElement.getAttribute('data-points');
 const points = JSON.parse(pointsData);
-console.log(points)
+console.log(points);
 
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZjViMTkyZC03MjNlLTQ5NWMtYWVhYi1lM2EyNWVhZTBiNWUiLCJpZCI6MzYyNDA5LCJpYXQiOjE3NjM2OTMzMTF9._xqwTlJIDkfBqCLu2cLPNdttN_Q5tSBh2TUdt6zGzaQ';
 
@@ -18,6 +18,21 @@ const viewer = new Cesium.Viewer("map", {
     infoBox: false,
     selectionIndicator: false
 });
+
+// Add a black cover to the globe
+viewer.scene.primitives.add(new Cesium.Primitive({
+  geometryInstances: new Cesium.GeometryInstance({
+    geometry: new Cesium.RectangleGeometry({
+      rectangle: Cesium.Rectangle.fromDegrees(-180.0, -90.0, 180.0, 90.0),
+      vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+    })
+  }),
+  appearance: new Cesium.EllipsoidSurfaceAppearance({
+    material: Cesium.Material.fromType('Color', {
+      color: new Cesium.Color(0.0, 0.0, 0.0, 0.8)
+    })
+  })
+}));
 
 try {
     const imageryLayer = viewer.imageryLayers.addImageryProvider(
