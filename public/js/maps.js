@@ -2,8 +2,6 @@ const mapElement = document.getElementById('map');
 const pointsData = mapElement.getAttribute('data-points');
 const points = JSON.parse(pointsData);
 
-Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZjViMTkyZC03MjNlLTQ5NWMtYWVhYi1lM2EyNWVhZTBiNWUiLCJpZCI6MzYyNDA5LCJpYXQiOjE3NjM2OTMzMTF9._xqwTlJIDkfBqCLu2cLPNdttN_Q5tSBh2TUdt6zGzaQ';
-
 const viewer = new Cesium.Viewer("map", {
     geocoder: false,
     homeButton: false,
@@ -18,10 +16,8 @@ const viewer = new Cesium.Viewer("map", {
     selectionIndicator: false
 });
 
-// Remove default base layer (Satellite) so it doesn't obscure the road map
 viewer.imageryLayers.removeAll();
 
-// Spatial Index to speed up tile generation
 class SpatialGrid {
     constructor(cellSize) {
         this.cellSize = cellSize;
@@ -29,7 +25,6 @@ class SpatialGrid {
     }
 
     addSegment(p1, p2) {
-        // Simple bounding box insertion
         const minLon = Math.min(p1.longitude, p2.longitude);
         const maxLon = Math.max(p1.longitude, p2.longitude);
         const minLat = Math.min(p1.latitude, p2.latitude);
@@ -78,9 +73,8 @@ class FogImageryProvider {
         this._tilingScheme = new Cesium.GeographicTilingScheme();
         this._tileWidth = 256;
         this._tileHeight = 256;
-        this._grid = new SpatialGrid(1.0); // 1 degree grid cells
+        this._grid = new SpatialGrid(1.0);
 
-        // Pre-process points into segments and add to grid
         const maxDistance = 2.5; // km
         if (points.length > 0) {
             for (let i = 1; i < points.length; i++) {
@@ -110,13 +104,9 @@ class FogImageryProvider {
         canvas.height = this._tileHeight;
         const ctx = canvas.getContext('2d');
 
-        // Fill with opaque fog (black with alpha)
-        // We use a dark color with 0.8 alpha.
-        // Note: Cesium handles alpha blending.
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.fillRect(0, 0, this._tileWidth, this._tileHeight);
 
-        // Calculate tile bounds in degrees
         const rectangle = this._tilingScheme.tileXYToRectangle(x, y, level);
         const west = Cesium.Math.toDegrees(rectangle.west);
         const south = Cesium.Math.toDegrees(rectangle.south);
@@ -134,7 +124,7 @@ class FogImageryProvider {
 
         // Set up "erasing" mode
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)'; // Color doesn't matter, alpha does
+        ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
@@ -178,17 +168,14 @@ class FogImageryProvider {
     }
 }
 
-// Add the fog layer
 const fogProvider = new FogImageryProvider(points);
 viewer.imageryLayers.addImageryProvider(fogProvider);
 
-// Add Google Maps Base Layer
 (async () => {
     try {
         const imageryLayer = viewer.imageryLayers.addImageryProvider(
             await Cesium.IonImageryProvider.fromAssetId(3830184),
         );
-        // Move base layer to bottom
         viewer.imageryLayers.lowerToBottom(imageryLayer);
         
         await viewer.zoomTo(imageryLayer);
