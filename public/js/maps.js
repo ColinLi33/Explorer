@@ -75,7 +75,7 @@ class FogImageryProvider {
         this._tileHeight = 256;
         this._grid = new SpatialGrid(1.0);
 
-        const maxDistance = 2.5; // km
+        const maxDistance = 2.5;
         if (points.length > 0) {
             for (let i = 1; i < points.length; i++) {
                 const p1 = points[i - 1];
@@ -113,44 +113,33 @@ class FogImageryProvider {
         const east = Cesium.Math.toDegrees(rectangle.east);
         const north = Cesium.Math.toDegrees(rectangle.north);
 
-        // Get relevant segments
-        // We query a slightly larger area to handle lines crossing edges
-        const buffer = 0.1; // degrees buffer
+        const buffer = 0.1;
         const segments = this._grid.query(west - buffer, south - buffer, east + buffer, north + buffer);
 
         if (segments.length === 0) {
             return Promise.resolve(canvas);
         }
 
-        // Set up "erasing" mode
         ctx.globalCompositeOperation = 'destination-out';
         ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
-        // Adjust line width based on zoom level
-        // We want a minimum pixel width (e.g. 10px) so it's not a blob when zoomed out.
-        // We want a maximum pixel width (e.g. 100px) so it doesn't cover everything when zoomed in.
-        // We want a target geographic width (e.g. 60m) so it stays substantial when zoomed in.
-        // Meters per pixel at equator for level L ~= 40075017 / 512 / 2^L
         const metersPerPixel = 78271.5 / Math.pow(2, level);
         const targetWidthMeters = 60;
         const calculatedWidth = targetWidthMeters / metersPerPixel;
         
-        // Clamp between 10px and 100px
         ctx.lineWidth = Math.min(80, Math.max(25, calculatedWidth));
 
-        // Helper to project lat/lon to tile pixel coordinates
         const width = this._tileWidth;
         const height = this._tileHeight;
         
         function toPixel(lon, lat) {
-            // Linear interpolation for Geographic projection
             const u = (lon - west) / (east - west);
             const v = (lat - south) / (north - south);
             return {
                 x: u * width,
-                y: (1 - v) * height // Flip Y because canvas 0 is top
+                y: (1 - v) * height
             };
         }
 
@@ -178,7 +167,17 @@ viewer.imageryLayers.addImageryProvider(fogProvider);
         );
         viewer.imageryLayers.lowerToBottom(imageryLayer);
         
-        await viewer.zoomTo(imageryLayer);
+        if (points.length > 0) {
+            const latestPoint = points[points.length - 1];
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(
+                    latestPoint.longitude,
+                    latestPoint.latitude,
+                    10000
+                ),
+                duration: 2
+            });
+        }
     } catch (error) {
         console.log(error);
     }
