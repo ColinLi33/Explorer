@@ -169,14 +169,16 @@ viewer.imageryLayers.addImageryProvider(fogProvider);
         
         if (points.length > 0) {
             const latestPoint = points[points.length - 1];
-            viewer.camera.flyTo({
-                destination: Cesium.Cartesian3.fromDegrees(
-                    latestPoint.longitude,
-                    latestPoint.latitude,
-                    10000
-                ),
-                duration: 2
-            });
+            setTimeout(() => {
+                viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(
+                        latestPoint.longitude,
+                        latestPoint.latitude,
+                        10000
+                    ),
+                    duration: 2
+                });
+            }, 1500);
         }
     } catch (error) {
         console.log(error);
