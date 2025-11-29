@@ -351,8 +351,7 @@ app.get('/map/:username', optionalAuthenticate, async (req, res) => {
             return res.send('<script>alert("The map you tried to access is private."); window.location.href = "/";</script>');
         }
         
-        let points;
-        points = await logger.db.getUserClusters(username);
+        const points = await logger.db.getUserClusters(username);
         
         const shareableLink = isPublic ? `${req.protocol}://${req.get('host')}/map/${username}` : '';
         

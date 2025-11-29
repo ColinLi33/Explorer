@@ -85,7 +85,6 @@ class Database {
             FROM LocationData 
             WHERE username = ? 
             HAVING distance < ?
-            ORDER BY distance 
             LIMIT 1
         `, [latitude, longitude, latitude, username, thresholdMeters]);
         

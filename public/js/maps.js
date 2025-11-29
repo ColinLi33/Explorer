@@ -28,12 +28,6 @@ class SpatialGrid {
         this.grid = new Map();
     }
 
-    _getKey(lat, lon) {
-        const x = Math.floor(lon / this.cellSize);
-        const y = Math.floor(lat / this.cellSize);
-        return `${x},${y}`;
-    }
-
     addSegment(p1, p2) {
         // Simple bounding box insertion
         const minLon = Math.min(p1.longitude, p2.longitude);
@@ -87,7 +81,7 @@ class FogImageryProvider {
         this._grid = new SpatialGrid(1.0); // 1 degree grid cells
 
         // Pre-process points into segments and add to grid
-        const maxDistance = 3.5; // km
+        const maxDistance = 2.5; // km
         if (points.length > 0) {
             for (let i = 1; i < points.length; i++) {
                 const p1 = points[i - 1];
@@ -109,8 +103,6 @@ class FogImageryProvider {
     get ready() { return true; }
     get rectangle() { return this._tilingScheme.rectangle; }
     get hasAlphaChannel() { return true; }
-
-    getTileCredits(x, y, level) { return undefined; }
 
     requestImage(x, y, level) {
         const canvas = document.createElement('canvas');
@@ -156,7 +148,7 @@ class FogImageryProvider {
         const calculatedWidth = targetWidthMeters / metersPerPixel;
         
         // Clamp between 10px and 100px
-        ctx.lineWidth = Math.min(100, Math.max(25, calculatedWidth));
+        ctx.lineWidth = Math.min(80, Math.max(25, calculatedWidth));
 
         // Helper to project lat/lon to tile pixel coordinates
         const width = this._tileWidth;
@@ -184,8 +176,6 @@ class FogImageryProvider {
         
         return Promise.resolve(canvas);
     }
-
-    pickFeatures(x, y, level, longitude, latitude) { return undefined; }
 }
 
 // Add the fog layer
