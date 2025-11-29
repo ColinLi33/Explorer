@@ -18,6 +18,9 @@ const viewer = new Cesium.Viewer("map", {
     selectionIndicator: false
 });
 
+// Remove default base layer (Satellite) so it doesn't obscure the road map
+viewer.imageryLayers.removeAll();
+
 // Spatial Index to speed up tile generation
 class SpatialGrid {
     constructor(cellSize) {
@@ -143,11 +146,17 @@ class FogImageryProvider {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
-        // Adjust line width based on zoom level to keep it somewhat consistent in meters, 
-        // or keep it fixed in pixels for visibility. 
-        // Fixed pixels means it gets "thinner" geographically as you zoom in, which is good for precision.
-        // Let's start with a fixed pixel width that feels right.
-        ctx.lineWidth = 15; 
+        // Adjust line width based on zoom level
+        // We want a minimum pixel width (e.g. 10px) so it's not a blob when zoomed out.
+        // We want a maximum pixel width (e.g. 100px) so it doesn't cover everything when zoomed in.
+        // We want a target geographic width (e.g. 60m) so it stays substantial when zoomed in.
+        // Meters per pixel at equator for level L ~= 40075017 / 512 / 2^L
+        const metersPerPixel = 78271.5 / Math.pow(2, level);
+        const targetWidthMeters = 60;
+        const calculatedWidth = targetWidthMeters / metersPerPixel;
+        
+        // Clamp between 10px and 100px
+        ctx.lineWidth = Math.min(100, Math.max(25, calculatedWidth));
 
         // Helper to project lat/lon to tile pixel coordinates
         const width = this._tileWidth;
