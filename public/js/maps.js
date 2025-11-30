@@ -16,6 +16,33 @@ const viewer = new Cesium.Viewer("map", {
     selectionIndicator: false
 });
 
+// Set default zoom factor
+viewer.scene.screenSpaceCameraController.zoomFactor = 5.0;
+
+// Enable pinch-to-zoom on trackpads (often mapped to Ctrl + Wheel)
+viewer.scene.screenSpaceCameraController.zoomEventTypes = [
+    Cesium.CameraEventType.RIGHT_DRAG,
+    Cesium.CameraEventType.WHEEL,
+    Cesium.CameraEventType.PINCH,
+    { eventType: Cesium.CameraEventType.WHEEL, modifier: Cesium.KeyboardEventModifier.CTRL }
+];
+
+// Dynamically adjust zoom factor based on input type
+viewer.canvas.addEventListener('wheel', (e) => {
+    if (e.ctrlKey) {
+        // Trackpad pinch (Ctrl + Wheel) - faster zoom
+        viewer.scene.screenSpaceCameraController.zoomFactor = 15.0;
+    } else {
+        // Standard mouse wheel - slower zoom
+        viewer.scene.screenSpaceCameraController.zoomFactor = 5.0;
+    }
+}, { passive: true, capture: true });
+
+viewer.canvas.addEventListener('touchstart', () => {
+    // Mobile pinch - faster zoom
+    viewer.scene.screenSpaceCameraController.zoomFactor = 15.0;
+}, { passive: true, capture: true });
+
 viewer.imageryLayers.removeAll();
 
 class SpatialGrid {
