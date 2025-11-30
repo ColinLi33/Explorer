@@ -15,7 +15,7 @@ const viewer = new Cesium.Viewer("map", {
     infoBox: false,
     selectionIndicator: false
 });
-
+viewer.cesiumWidget.creditContainer.style.display = 'none';
 viewer.scene.screenSpaceCameraController.zoomFactor = 5.0;
 
 viewer.scene.screenSpaceCameraController.zoomEventTypes = [
@@ -208,5 +208,3 @@ viewer.imageryLayers.addImageryProvider(fogProvider);
         console.log(error);
     }
 })();
-
-viewer.cesiumWidget.creditContainer.style.display = 'none';
